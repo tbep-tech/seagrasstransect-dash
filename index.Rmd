@@ -1,0 +1,113 @@
+---
+title: "TAMPA BAY SEAGRASS TRANSECT DASHBOARD"
+output: 
+  flexdashboard::flex_dashboard:
+     logo: www/tarponlogo.png
+     social: menu
+     source_code: "https://github.com/tbep-tech/seagrasstransect-dash"
+runtime: shiny
+css: styles.css
+---
+
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+
+library(flexdashboard)
+library(tidyverse)
+library(tbeptools)
+# devtools::load_all('../tbeptools')
+library(mapview)
+library(sf)
+library(reactable)
+library(shinydashboard)
+library(plotly)
+library(shinyWidgets)
+library(extrafont)
+
+# # style file
+# styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
+# writeLines(styles, 'styles.css')
+
+data(transect)
+data(transectocc)
+
+fml <- 'Lato Light'
+
+# for shiny server
+st_crs(trnlns) <- 4326
+st_crs(trnpts) <- 4326
+```
+
+```{r reactives}
+
+```
+
+OVERVIEW
+===========================================================
+
+Column {.tabset .tabset-fade data-width=650}
+-----------------------------------------------------------------------
+
+### USING THE DASHBOARD
+
+<div class = "row">
+<div class = "col-md-2"></div>
+<div class = "col-md-8">
+
+#### WELCOME TO THE TAMPA BAY SEAGRASS TRANSECT DASHBOARD!
+
+```{r, echo = F, out.width = '100%', fig.align = 'center'}
+knitr::include_graphics('www/bannerimage.png')
+```
+
+1) __TRANSECT LOCATIONS__
+1) __OVERALL SUMMARIES__
+1) __SELECTED TRANSECT DATA__
+
+Some of the plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
+
+<br>
+```{r, fig.align='center', out.width='30%'}
+knitr::include_graphics('www/plotcontrols.PNG')
+```
+<br>
+
+#### Website information
+
+Technical questions about the TBNI can be sent to [Gary Raulerson](mailto:graulserson@tbep.org).  Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org). The page source content can be viewed on [Github](https://github.com/tbep-tech/seagrasstransect-dash). Like this app? Share it on social media using the [\#TampaBayOpenSci](https://twitter.com/hashtag/TampaBayOpenSci?src=hashtag_click) hashtag.  
+
+Citation info here: forthcoming
+
+</div>
+<div class = "col-md-2"></div>
+</div>
+
+1 TRANSECT LOCATIONS
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+
+2 OVERALL SUMMARIES
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+2 SELECTED TRANSECT DATA
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+Column {data-width=500}
+--------------------------
+
