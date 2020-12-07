@@ -36,10 +36,49 @@ fml <- 'Lato Light'
 # for shiny server
 st_crs(trnlns) <- 4326
 st_crs(trnpts) <- 4326
+
+# globals
+segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
+spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
 ```
 
 ```{r reactives}
+# matrix plot
+matplo <- reactive({
+  
+  # input
+  segsel1 <- input$segsel1
+  yrssel1 <- input$yrssel1
 
+  req(!is.null(segsel1))
+  req(yrssel1[1] < yrssel1[2])
+  
+  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, yrrng = yrssel1)
+  
+  return(p)
+  
+})
+
+# ave freq occurrence plot
+aveplo <- reactive({
+  
+  # input
+  segsel1 <- input$segsel1
+  sppsel1 <- input$sppsel1
+  yrssel1 <- input$yrssel1
+  
+  req(!is.null(segsel1))
+  req(!is.null(sppsel1))
+  req(yrssel1[1] < yrssel1[2])
+  
+  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1) %>% 
+    layout(
+      title = list(text = NA)
+    )
+  
+  return(p)
+  
+})
 ```
 
 OVERVIEW
@@ -85,22 +124,37 @@ Citation info here: forthcoming
 1 TRANSECT LOCATIONS
 ===========================================================
 
-Column {.tabset .tabset-fade data-width=275}
+Column
 -----------------------------------------------------------------------
 
+### STARTING LOCATIONS, DIRECTION, AND AGENCY
 
-Column {data-width=500}
------------------------------------------------------------------------
-
+```{r}
+mapview(trnpts, label = trnpts$lab, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F) + 
+  mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
+```
 
 2 OVERALL SUMMARIES
 ===========================================================
 
-Column {.tabset .tabset-fade data-width=275}
+Row
 -----------------------------------------------------------------------
 
-Column {data-width=500}
------------------------------------------------------------------------
+### REPORT CARD MATRIX AND FREQUENCY OCCURRENCE OVER TIME
+
+```{r}
+fillCol(flex = c(0.1, 1),
+  fillRow(
+    selectInput(inputId = 'segsel1', label = 'Select segments:', choices = segs, selected = segs, selectize  = T, multiple = T, width = '90%'),
+    selectInput(inputId = 'sppsel1', label = 'Select species:', choices = spp, selected = spp, selectize = T, multiple = T, width = '90%'), 
+    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2019, value = c(1998, 2019), step = 1, sep = '', width = '90%')
+  ),
+  fillRow(flex = c(0.5, 1),
+    renderPlotly(matplo()),
+    renderPlotly(aveplo())
+  )
+)
+```
 
 2 SELECTED TRANSECT DATA
 ===========================================================
