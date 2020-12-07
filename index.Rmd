@@ -17,29 +17,61 @@ library(tidyverse)
 library(tbeptools)
 # devtools::load_all('../tbeptools')
 library(mapview)
+library(leaflet)
 library(sf)
 library(reactable)
 library(shinydashboard)
 library(plotly)
 library(shinyWidgets)
 library(extrafont)
+library(downloadthis)
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
 
-data(transect)
-data(transectocc)
+load(file = 'data/transect.RData')
+load(file = 'data/transectocc.RData')
 
 fml <- 'Lato Light'
 
 # for shiny server
-st_crs(trnlns) <- 4326
 st_crs(trnpts) <- 4326
+
+trnpts <- trnpts %>% 
+  filter(TRAN_ID %in% unique(transect$Transect)) %>% 
+  filter(!duplicated(TRAN_ID))
+
+# base map
+m <- mapview(trnpts, homebutton = F, legend = F) %>% 
+  .@map %>% 
+  clearMarkers() %>% 
+  addCircleMarkers(
+    data = trnpts,
+    layerId = ~TRAN_ID,
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = 'grey',
+    weight = 1,
+    fillOpacity = 1,
+    radius= 4,
+    label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+  ) %>% 
+  addLabelOnlyMarkers(data = trnpts, ~0.99995 * LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = labelOptions(
+    noHide = T, 
+    direction = 'auto', 
+    textOnly = T,
+    textsize = '15px',
+    style = list(
+      'color' = 'darkgreen'
+    )
+  )) 
 
 # globals
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
-spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
+spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia")
+trns <- sort(unique(transect$Transect))
 ```
 
 ```{r reactives}
@@ -53,7 +85,9 @@ matplo <- reactive({
   req(!is.null(segsel1))
   req(yrssel1[1] < yrssel1[2])
   
-  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, yrrng = yrssel1)
+  tots <- ifelse('all' %in% segsel1, T, F)
+  
+  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots)
   
   return(p)
   
@@ -71,7 +105,10 @@ aveplo <- reactive({
   req(!is.null(sppsel1))
   req(yrssel1[1] < yrssel1[2])
   
-  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1) %>% 
+  tots <- ifelse('total' %in% sppsel1, T, F)
+  sppsel1 <- sppsel1[!sppsel1 %in% 'total']
+    
+  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots) %>% 
     layout(
       title = list(text = NA)
     )
@@ -79,6 +116,158 @@ aveplo <- reactive({
   return(p)
   
 })
+
+# map selection
+mapplo <- reactive({
+  
+  # input
+  trnsel1 <- input$trnsel1
+  
+  toadd <- trnpts %>% 
+    filter(TRAN_ID %in% trnsel1)
+
+  mout <- m %>% 
+    addCircleMarkers(
+      data = toadd,
+      layerId = ~TRAN_ID,
+      stroke = TRUE,
+      color = 'black',
+      fill = TRUE,
+      fillColor = 'red',
+      weight = 1,
+      fillOpacity = 1,
+      radius= 6,
+      label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+    ) 
+  
+  return(mout)
+  
+})
+
+# transect plot over time
+trnplo <- reactive({
+  
+  # input
+  trnsel1 <- input$trnsel1
+  sppsel2 <- input$sppsel2
+  yrssel2 <- input$yrssel2
+  
+  p <- show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2) %>% 
+    layout(
+      title = list(text = NA), 
+      legend = list(title = list(text = 'Abundance (BB)'))
+    )
+  
+  
+  return(p)
+  
+})
+
+# transect summary plot over time
+sumplo <- reactive({
+  
+  # input
+  trnsel1 <- input$trnsel1
+  sppsel2 <- input$sppsel2
+  yrssel2 <- input$yrssel2
+  
+  p <- show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2) %>% 
+    layout(
+      title = list(text = NA),
+      legend = list(title = list(text = NA)),
+      xaxis = list(title = list(text = 'Year'))
+    )
+  
+  return(p)
+  
+})
+
+# transect table
+trantab <- reactive({
+  
+  out <- transect
+  
+  return(out)
+  
+})
+
+# transect table
+rcttrantab <- reactive({
+  
+  # input
+  trantab <- trantab()
+  
+  out <- reactable(trantab,
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = colFormat(digits = 0, separators = F),
+      resizable = TRUE
+    ),
+    filterable = T,
+    defaultPageSize = 20
+    )
+  
+  return(out)
+  
+})
+
+# transect occurrence table
+tranocctab <- reactive({
+  
+  out <- transectocc
+  
+  return(out)
+  
+})
+
+# transect occurrence table
+rcttranocctab <- reactive({
+  
+  tranocctab <- tranocctab()
+  
+  out <- reactable(transectocc,
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = colFormat(digits = 0, separators = F),
+      resizable = TRUE
+    ),
+    filterable = T,
+    defaultPageSize = 20
+    )
+  
+  return(out)
+  
+})
+
+```
+
+```{r downloadhandlers}
+# download transect table
+output$dltrantab <- downloadHandler(
+  filename = function(){'transect.csv'},
+  content = function(file){
+    
+    # inputs
+    trantab <- trantab()
+    
+    write.csv(trantab, file, quote = T, row.names = F)
+    
+  }
+)
+
+# download transect occurrence table
+output$dltranocctab <- downloadHandler(
+  filename = function(){'transect_occurrence.csv'},
+  content = function(file){
+    
+    # inputs
+    tranocctab <- tranocctab()
+    
+    write.csv(tranocctab, file, quote = T, row.names = F)
+    
+  }
+)
+
 ```
 
 OVERVIEW
@@ -99,9 +288,9 @@ Column {.tabset .tabset-fade data-width=650}
 knitr::include_graphics('www/bannerimage.png')
 ```
 
-1) __TRANSECT LOCATIONS__
 1) __OVERALL SUMMARIES__
 1) __SELECTED TRANSECT DATA__
+1) __DATA DOWNLOADS__
 
 Some of the plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
 
@@ -121,23 +310,17 @@ Citation info here: forthcoming
 <div class = "col-md-2"></div>
 </div>
 
-1 TRANSECT LOCATIONS
+1 OVERALL SUMMARIES
 ===========================================================
 
-Column
+Column {.tabset .tabset-fade data-width=200}
 -----------------------------------------------------------------------
 
-### STARTING LOCATIONS, DIRECTION, AND AGENCY
+### USING THIS TAB
 
-```{r}
-mapview(trnpts, label = trnpts$lab, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F) + 
-  mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
-```
+Text details here
 
-2 OVERALL SUMMARIES
-===========================================================
-
-Row
+Column {data-width=500}
 -----------------------------------------------------------------------
 
 ### REPORT CARD MATRIX AND FREQUENCY OCCURRENCE OVER TIME
@@ -145,8 +328,8 @@ Row
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    selectInput(inputId = 'segsel1', label = 'Select segments:', choices = segs, selected = segs, selectize  = T, multiple = T, width = '90%'),
-    selectInput(inputId = 'sppsel1', label = 'Select species:', choices = spp, selected = spp, selectize = T, multiple = T, width = '90%'), 
+    selectInput(inputId = 'segsel1', label = 'Select segments:', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
+    selectInput(inputId = 'sppsel1', label = 'Select species:', choices = c('total', spp), selected = c('total', spp), selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2019, value = c(1998, 2019), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
@@ -159,9 +342,83 @@ fillCol(flex = c(0.1, 1),
 2 SELECTED TRANSECT DATA
 ===========================================================
 
-Column {.tabset .tabset-fade data-width=275}
+Column {.tabset .tabset-fade data-width=200}
 -----------------------------------------------------------------------
+
+### MAP SELECTION
+
+```{r}
+renderLeaflet(mapplo())
+```
+
+### USING THIS TAB
+
+Text details here
 
 Column {data-width=500}
 --------------------------
+
+### RESULTS BY TRANSECT
+
+```{r}
+fillCol(flex = c(0.1, 1),
+  fillRow(
+    selectInput(inputId = 'trnsel1', label = 'Select transect:', choices = trns, selected = trns[1], width = '90%'),
+    selectInput(inputId = 'sppsel2', label = 'Select species:', choices = spp, selected = spp, selectize = T, multiple = T, width = '90%'), 
+    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2019, value = c(1998, 2019), step = 1, sep = '', width = '90%')
+  ),
+  fillCol(flex = c(1, 1),
+    renderPlotly(trnplo()),
+    renderPlotly(sumplo())
+  )
+)
+```
+
+3 DATA DOWNLOAD
+===========================================================
+
+Column {.tabset .tabset-fade data-width=650}
+-----------------------------------------------------------------------
+
+### COMPLETE TRANSECT DATA
+
+```{r}
+fillCol(flex = c(NA, 1),
+  downloadBttn('dltrantab', 'Download data', style = 'simple', block = T, color = 'success'),
+  renderReactable(rcttrantab())
+  )
+```
+
+### SUMMARIZED FREQUENCY OCCURRENCE DATA
+
+```{r}
+fillCol(flex = c(NA, 1),
+  downloadBttn('dltranocctab', 'Download data', style = 'simple', block = T, color = 'success'),
+  renderReactable(rcttranocctab())
+  )
+```
+
+### METADATA
+
+__Complete transect data__: Minimally altered raw transect data for every transect and site (quadrat) along each transect.  
+
+* *MonitoringAgency*: Responsible monitoring agency for collecting data at the transect
+* *Date*: Sample date in YYYY-MM-DD
+* *Transect*: Transect name
+* *Site*: Quadrat location along each transect, meters
+* *Depth*: Site depth, meters. Should be negative values below the water surface.
+* *Savspecies*: Relevant seagrass genus, also includes AA (attached algae, multiple types including Caulerpa), DA (drift algae), and no cover
+* *SeagrassEdge*: Depth of seagrass edge, cm
+* *var*: Measured variable, one of abundance, blade length, or short shoot density
+* *aveval*: Average value for the measured variable (multiple quadrats at a site depending on variable), unitless if abundance, cm if blade length, shoots per square meter if short shoot density
+* *sdval*: Standard deviation for the measured variable, same units as in aveval
+
+__Summarized frequency occurrence data__: Summarized data at each transect and date, aggregating information across sites (quadrats).
+
+* *Date*: Sample date in YYYY-MM-DD
+* *Transect*: Transect name
+* *Savspecies*: Relevant seagrass genus, also includes AA (attached algae), DA (drift algae), and no cover
+* *nsites*: Number of sites (quadrats) at each transect/date, repeated across rows  
+* *foest*: Frequency occurrence estimate for the whole transect for the species, from 0 - 1
+* *bbest*: Abundance (Braun-Blaunquet) average across sites (quadrats) for the species, from 0 - 5
 

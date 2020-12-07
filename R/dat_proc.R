@@ -4,7 +4,8 @@ library(tbeptools)
 # transect data -----------------------------------------------------------
 
 # import entire transect dataset as JSON
-transect <- read_transect(training = FALSE)
+transect <- read_transect(training = FALSE) %>% 
+  select(-Crew)
 
 # get transect species occurrence summaries
 transectocc <- anlz_transectocc(transect)
