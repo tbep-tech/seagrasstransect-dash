@@ -71,6 +71,7 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia")
 trns <- sort(unique(transect$Transect))
+rctsz <- 15
 ```
 
 ```{r reactives}
@@ -203,7 +204,7 @@ rcttrantab <- reactive({
       resizable = TRUE
     ),
     filterable = T,
-    defaultPageSize = 20
+    defaultPageSize = rctsz
     )
   
   return(out)
@@ -222,6 +223,7 @@ tranocctab <- reactive({
 # transect occurrence table
 rcttranocctab <- reactive({
   
+  # input
   tranocctab <- tranocctab()
   
   out <- reactable(transectocc,
@@ -231,13 +233,43 @@ rcttranocctab <- reactive({
       resizable = TRUE
     ),
     filterable = T,
-    defaultPageSize = 20
+    defaultPageSize = rctsz
     )
   
   return(out)
   
 })
 
+# transect locations table
+trnptstab <- reactive({
+  
+  out <- trnpts %>% 
+    st_set_geometry(NULL) %>% 
+    select(Transect = TRAN_ID, lat_dd = LAT_DD, lon_dd = LONG_DD, mon_agency = MonAgency, bay_segment)
+  
+  return(out)
+  
+})
+
+# transect locations for download
+rcttrnptstab <- reactive({
+  
+  # input
+  trnptstab <- trnptstab()
+  
+  out <- reactable(trnptstab,
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = colFormat(digits = 0, separators = F),
+      resizable = TRUE
+    ),
+    filterable = T,
+    defaultPageSize = rctsz
+    )
+  
+  return(out)
+  
+})
 ```
 
 ```{r downloadhandlers}
@@ -267,6 +299,18 @@ output$dltranocctab <- downloadHandler(
   }
 )
 
+# download transect locations table
+output$dltrnptstab <- downloadHandler(
+  filename = function(){'transect_locations.csv'},
+  content = function(file){
+    
+    # inputs
+    trnptstab <- trnptstab()
+    
+    write.csv(trnptstab, file, quote = T, row.names = F)
+    
+  }
+)
 ```
 
 OVERVIEW
@@ -397,11 +441,19 @@ fillCol(flex = c(NA, 1),
   )
 ```
 
+### TRANSECT LOCATIONS
+
+```{r}
+fillCol(flex = c(NA, 1),
+  downloadBttn('dltrnptstab', 'Download data', style = 'simple', block = T, color = 'success'),
+  renderReactable(rcttrnptstab())
+  )
+```
+
 ### METADATA
 
 __Complete transect data__: Minimally altered raw transect data for every transect and site (quadrat) along each transect.  
 
-* *MonitoringAgency*: Responsible monitoring agency for collecting data at the transect
 * *Date*: Sample date in YYYY-MM-DD
 * *Transect*: Transect name
 * *Site*: Quadrat location along each transect, meters
@@ -420,4 +472,12 @@ __Summarized frequency occurrence data__: Summarized data at each transect and d
 * *nsites*: Number of sites (quadrats) at each transect/date, repeated across rows  
 * *foest*: Frequency occurrence estimate for the whole transect for the species, from 0 - 1
 * *bbest*: Abundance (Braun-Blaunquet) average across sites (quadrats) for the species, from 0 - 5
+
+__Transect locations__: Transect location data (EPSG 4326), including responsible monitoring agency
+
+* *Transect*: Transect name
+* *lat_dd*: Latitude in decimal degrees
+* *lon_dd*: Longitude in decimal degrees
+* *mon_agency*: Responsible monitoring agency for collecting data at the transect
+* *bay_segment*: Bay segment where the transect is located
 
