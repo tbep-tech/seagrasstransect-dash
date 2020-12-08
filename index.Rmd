@@ -31,6 +31,7 @@ library(extrafont)
 
 load(file = 'data/transect.RData')
 load(file = 'data/transectocc.RData')
+load(file = 'data/transectdem.RData')
 
 fml <- 'Lato Light'
 
@@ -71,6 +72,7 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia")
 trns <- sort(unique(transect$Transect))
+demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 ```
 
@@ -176,6 +178,45 @@ sumplo <- reactive({
       title = list(text = NA),
       legend = list(title = list(text = NA)),
       xaxis = list(title = list(text = 'Year'))
+    )
+  
+  return(p)
+  
+})
+
+# transect dem selection
+demdat <- reactive({
+  
+  # input
+  trnsel2 <- input$trnsel2
+  browser()
+  out <- transectdem %>% 
+    filter(Transect %in% trnsel2)
+  
+  return(out)
+  
+})
+
+# transect dem plot
+demplo <- reactive({
+  
+  # input
+  demdat <- demdat() 
+  
+  p <- ggplot(demdat, aes(y = Depth_dem, x = Site, group = Date)) + 
+    geom_line() + 
+    geom_point(aes(colour = patxt, size = meanabu)) + 
+    facet_wrap(~Date) +
+    scale_size('Mean abundance', range = c(2, 6)) + 
+    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
+    theme_minimal(base_size = 18, base_family = fml) + 
+    guides(colour = guide_legend(override.aes = list(size = 4))) +
+    # theme(
+      # legend.title = element_blank()
+    # ) + 
+    labs(
+      x = 'Transect position (m)', 
+      y = 'Depth, topographic (cm)'
     )
   
   return(p)
@@ -333,6 +374,7 @@ knitr::include_graphics('www/bannerimage.png')
 
 1) __OVERALL SUMMARIES__
 1) __SELECTED TRANSECT DATA__
+1) __SEAGRASS EDGE__
 1) __DATA DOWNLOADS__
 
 Some of the plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
@@ -417,7 +459,21 @@ fillCol(flex = c(0.1, 1),
 )
 ```
 
-3 DATA DOWNLOAD
+3 SEAGRASS EDGE
+===========================================================
+
+```{r}
+fillCol(flex = c(0.1, 1),
+  fillRow(
+    selectInput(inputId = 'trnsel2', label = 'Select transect:', choices = demtrns, selected = demtrns[1], width = '90%')
+  ),
+  fillCol(flex = c(1),
+    renderPlot(demplo())
+  )
+)
+```
+
+4 DATA DOWNLOADS
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=650}
