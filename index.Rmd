@@ -24,7 +24,6 @@ library(shinydashboard)
 library(plotly)
 library(shinyWidgets)
 library(extrafont)
-library(downloadthis)
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
