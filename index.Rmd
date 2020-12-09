@@ -189,7 +189,7 @@ demdat <- reactive({
   
   # input
   trnsel2 <- input$trnsel2
-  browser()
+
   out <- transectdem %>% 
     filter(Transect %in% trnsel2)
   
