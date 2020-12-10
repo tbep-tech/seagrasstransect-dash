@@ -332,15 +332,18 @@ doc_est <- function(dat_in, depth_var = 'Site', sg_var = 'meanabu', maxbin = 0.5
 # 'res' output from sense
 # 'dt' original data
 dep_est <- function(res, dt){
- 
+
+  if(!'function' %in% class(attr(res, 'est_fun')))
+    return(NA)
+  
   # site max
   z_cmed <- attr(res, 'z_cmed')
   lo <- attr(res, 'lower_est')$'z_cmed'
   hi <- attr(res, 'upper_est')$'z_cmed'
+  preddat <- data.frame(Site = c(lo, z_cmed, hi))
   
-  approx(x = dt$Site, y = dt$Depth_dem, xout = c(lo, z_cmed, hi))
-  dep <- Hmisc::approxExtrap(x = dt$Site, y = dt$Depth_dem, xout = c(lo, z_cmed, hi))
-  dep <- dep$y
+  mod <- lm(Depth_dem~Site, data = dt)
+  dep <- predict(mod, newdata = preddat)
 
   out <- tibble(
     var = c('Depth_dem', 'Site'), 

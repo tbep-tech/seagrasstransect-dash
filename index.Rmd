@@ -24,6 +24,9 @@ library(shinydashboard)
 library(plotly)
 library(shinyWidgets)
 library(extrafont)
+library(patchwork)
+
+source('R/funcs.R')
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
@@ -217,6 +220,173 @@ demplo <- reactive({
     labs(
       x = 'Transect position (m)', 
       y = 'Depth, topographic (cm)'
+    )
+  
+  return(p)
+  
+})
+
+# transect dem plot
+dtdemplo <- reactive({
+  
+  # input
+  demdat <- demdat() 
+  dtssel1 <- input$dtssel1
+  
+  req(dtssel1)
+
+  # subset date data from demdat
+  dt <- demdat %>% 
+    filter(Date %in% as.Date(dtssel1)) %>% 
+    st_set_geometry(NULL) #%>% 
+    # filter(Site >= 0)
+
+  # site estimate
+  allests <- doc_est(dt) %>% 
+    sens() 
+  
+  # edge estimate from site
+  res <- allests %>% 
+    dep_est(., dt)
+
+  # abundance by site
+  p1 <- ggplot() + 
+    geom_point(data = dt, aes(x = Site, y = meanabu, group = Date, colour = patxt, size = -1 * Depth_dem)) + 
+    scale_size('Depth (cm)', range = c(4, 9)) + 
+    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
+    theme_minimal(base_size = 18, base_family = fml) + 
+    guides(colour = guide_legend(override.aes = list(size = 4))) +
+    labs(
+      x = 'Transect position (m)', 
+      y = 'Mean abundance'
+    )
+  
+  # depth by site
+  p2 <- ggplot() + 
+    geom_line(data = dt, aes(x = Site, y = Depth_dem, group = Date)) +
+    geom_point(data = dt, aes(x = Site, y = Depth_dem, group = Date, colour = patxt, size = meanabu)) +  
+    scale_size('Mean abundance', range = c(4, 9)) + 
+    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) +
+    theme_minimal(base_size = 18, base_family = fml) + 
+    guides(colour = guide_legend(override.aes = list(size = 4))) +
+    labs(
+      x = 'Transect position (m)', 
+      y = 'Depth (cm)'
+    )
+
+  ttl <- 'Estimate not possible'
+  
+  # add site, edge estimates if available
+  if(!is.na(res)){
+    
+    # logistic mod prediction for site
+    preds <- attr(allests, 'preds')
+  
+    # linear mod function 
+    est_fun <- attr(allests, 'est_fun')
+    
+    # title
+    rnd <- res %>% 
+      mutate_if(is.numeric, round, 1) %>% 
+      data.frame
+    ttl <- paste0('Site edge (m): ', rnd[[2, 3]], ' (', paste0(c(rnd[[2, 2]], rnd[[2, 4]]), collapse = ', '), ')')
+    ttl <- paste0(ttl, ', ', 'Seagrass edge (cm): ', rnd[[1, 3]], ' (', paste0(c(rnd[[1, 2]], rnd[[1, 4]]), collapse = ', '), ')')
+    
+    # add site estimate and error
+    p1 <- p1 +
+      stat_function(fun = est_fun, colour = 'grey', alpha = 0.8) + 
+      geom_line(data = preds, aes(x = Site, y = sg_prp)) +
+      geom_vline(data = res[2, ], aes(xintercept = z_cmed, linetype = 'Site edge'), color = 'blue') + 
+      geom_rect(data = res[2, ], aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
+      scale_linetype(name = NULL) +
+      coord_cartesian(ylim = c(min(preds$sg_prp, na.rm = T), max(preds$sg_prp, na.rm = T)))
+    
+    # res transposed for p2
+    res2 <- res %>% 
+      gather('est', 'val', -var) %>% 
+      spread(var, val)
+
+    # add site and depth estimates
+    p2 <- p2 +
+      # geom_errorbarh(data = res[2, ], aes(xmin = lo, xmax = hi, y = res[res$var == 'Depth_dem', 'z_cmed'][[1]]), height = 0) +
+      # geom_errorbar(data = res[1, ], aes(ymin = lo, ymax = hi, x = res[res$var == 'Site', 'z_cmed'][[1]]), width = 0) +
+      geom_smooth(data = dt, aes(x = Site, y = Depth_dem), method = 'lm', se = F, color = 'grey') + 
+      geom_rect(data = res[1, ], aes(ymin = lo, ymax = hi, xmin = -Inf, xmax = Inf), alpha = 0.2, fill = 'tomato1') +
+      geom_rect(data = res[2, ], aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
+      geom_vline(data = res[2, ], aes(xintercept = z_cmed), color = 'blue') + 
+      geom_hline(data = res[1, ], aes(yintercept = z_cmed, linetype = 'Seagrass edge'), color = 'red') +
+      scale_linetype(name = NULL)
+      # geom_point(data = res2[res2$est == 'z_cmed', ], aes(x = Site, y = Depth_dem), color = 'blue', size = 4) 
+    
+  }
+  
+  # add title
+  p1 <- p1 +
+    ggtitle(ttl)
+  
+  p <- p1 + p2 + plot_layout(ncol = 2)
+  
+  return(p)
+  
+})
+
+# all dem edge estimates
+alledgdat <- reactive({
+  
+  # input
+  demdat <- demdat()
+  
+  req(demdat)
+
+  out <- demdat %>%
+    group_by(Date) %>% 
+    nest() %>% 
+    mutate(
+      ests = purrr::map(data, function(x){
+
+        x <- arrange(x, Site)
+  
+        out <- try({doc_est(x) %>% 
+          sens() %>% 
+          dep_est(., x)
+        })
+        
+        return(out)
+      
+      })
+    ) %>% 
+    select(-data) %>% 
+    unnest('ests') %>% 
+    dplyr::filter(!var %in% 'Site') %>% 
+    select(-ests, -var)
+  
+  return(out)
+  
+})
+
+# all dem edge plot
+alledgplo <- reactive({
+  
+  # inpu
+  alledgdat <- alledgdat()  
+ 
+  validate(
+    need(length(na.omit(alledgdat)) > 0, 'No estimates available for transect')
+  )
+
+  p <- ggplot(alledgdat, aes(x = Date, y = z_cmed)) + 
+    geom_rug(sides = 'b', size = 1) + 
+    geom_line() +
+    geom_errorbar(aes(ymin = lo, ymax = hi)) + 
+    geom_point(size = 4) +
+    theme_minimal(base_size = 18, base_family = fml) + 
+    guides(colour = guide_legend(override.aes = list(size = 4))) +
+    theme(
+      legend.title = element_blank(),
+      axis.title.x = element_blank()
+    ) +
+    labs(
+     y = 'Seagrass edge estimate (cm)'
     )
   
   return(p)
@@ -441,7 +611,7 @@ renderLeaflet(mapplo())
 Text details here
 
 Column {data-width=500}
---------------------------
+-----------------------------------------------------------------------
 
 ### RESULTS BY TRANSECT
 
@@ -462,15 +632,52 @@ fillCol(flex = c(0.1, 1),
 3 SEAGRASS EDGE
 ===========================================================
 
+Column {.tabset .tabset-fade data-width=200}
+-----------------------------------------------------------------------
+
+### USING THIS TAB
+
+Text details here
+
+
+Column {data-width=500, .tabset .tabset-fade}
+-----------------------------------------------------------------------
+
 ```{r}
-fillCol(flex = c(0.1, 1),
-  fillRow(
-    selectInput(inputId = 'trnsel2', label = 'Select transect:', choices = demtrns, selected = demtrns[1], width = '90%')
-  ),
-  fillCol(flex = c(1),
-    renderPlot(demplo())
-  )
+column(12,
+  selectInput(inputId = 'trnsel2', label = 'Select transect:', choices = demtrns, selected = demtrns[1])
 )
+```
+
+### DEPTH BY DISTANCE
+
+```{r}
+renderPlot(demplo())
+```
+
+### DATE RESULTS
+
+```{r}
+fillCol(flex = c(NA, 1),
+  renderUI({
+    
+    demdat <- demdat()
+    
+    req(demdat)
+    
+    dts <- sort(unique(demdat$Date))
+    
+    selectInput(inputId = 'dtssel1', 'Select date:', choices = dts)
+    
+  }), 
+  renderPlot(dtdemplo())
+)
+```
+
+### EDGE TRENDS BY SITE
+
+```{r}
+renderPlot(alledgplo())
 ```
 
 4 DATA DOWNLOADS

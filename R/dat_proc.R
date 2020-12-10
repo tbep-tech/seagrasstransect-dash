@@ -3,6 +3,8 @@ library(tbeptools)
 library(sf)
 library(raster)
 
+source('R/funcs.R')
+
 # dem data ----------------------------------------------------------------
 
 # utm <- '+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs'
@@ -27,6 +29,7 @@ save(transectocc, file = 'data/transectocc.RData', compress = 'xz')
 # dem depth at each point -------------------------------------------------
 
 load(file = 'data/transect.RData')
+load(file = 'data/dem.RData')
 
 utm <- '+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs'
 spp <- c('Halodule', 'Syringodium', 'Thalassia', 'Ruppia', 'Halophila')
@@ -50,18 +53,23 @@ trn <- transect %>%
 # location of starting point in UTM
 lns <- trnlns %>% 
   st_transform(crs = utm) %>% 
+  group_by(Site) %>% 
+  nest() %>% 
   mutate(
-    LONG_M = st_coordinates(.)[1, 1], 
-    LAT_M = st_coordinates(.)[1, 2]
+    LONG_M = purrr::map(data, function(x) st_coordinates(x)[1, 1]),
+    LAT_M = purrr::map(data, function(x) st_coordinates(x)[1, 2]), 
+    bearing = purrr::map(data, function(x) x$bearing)
   ) %>% 
-  dplyr::select(Transect = Site, LONG_M, LAT_M, bearing) %>% 
-  st_set_geometry(NULL)
+  dplyr::select(-data) %>% 
+  unnest(c('LONG_M', 'LAT_M', 'bearing')) %>% 
+  ungroup() %>% 
+  dplyr::rename(Transect = Site) 
 
 # get location of transect points
 # extract depth from dem using locations
 # get location of points by angle and distance
 transectdem <- trn %>% 
-  inner_join(lns, by = 'Transect') %>% 
+  inner_join(., lns, by = 'Transect') %>% 
   dplyr::select(Transect, Date, Site, Depth_obs, meanabu, pa, patxt, LAT_Mstr = LAT_M, LONG_Mstr = LONG_M, bearing) %>% 
   mutate(
     Site = as.numeric(Site),
@@ -79,3 +87,9 @@ transectdem <- trn %>%
   )
 
 save(transectdem, file = 'data/transectdem.RData', compress = 'xz')
+
+# seagrass edge estimates -------------------------------------------------
+
+data(transectdem)
+
+transectedg <- transectdem
