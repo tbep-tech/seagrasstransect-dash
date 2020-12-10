@@ -542,10 +542,14 @@ Column {.tabset .tabset-fade data-width=650}
 knitr::include_graphics('www/bannerimage.png')
 ```
 
-1) __OVERALL SUMMARIES__
-1) __SELECTED TRANSECT DATA__
-1) __SEAGRASS EDGE__
-1) __DATA DOWNLOADS__
+Seagrass is an important habitat for fish and other marine animals. It stabilizes sediment, produces oxygen, and reduces shoreline erosion. The coverage, species, and condition of seagrass are significant indicators of ecosystem health in Tampa Bay.  Over the past 40-plus years, reductions in nutrient polulution (primarily nitrogen that fuels algal growth that limits light penetration in the water column) by partners throughout the watershed have signifcantly improved water clarity, leading to increases in seagrass.
+
+Each year, TBEP partners collect seagrass transect data at fixed locations in Tampa Bay.  These data are used to inform progress on achieving bay goals for seagrass habitat.  Data have been collected since the mid 1990s and are hosted online at the [Tampa Bay Water Atlas](https://www.tampabay.wateratlas.usf.edu/) by the University of South Florida Water Institute.  These data represent nearly thirty years of field sampling and inlude several thousand records on seagrass condition.  This dashboard provides access to these data through a series of tabs that present synthesized results from the raw data. The dashboard is arranged as follows:
+
+1) __OVERALL SUMMARIES__: View stoplight graphic and changes over time by major bay segments
+1) __SELECTED TRANSECT DATA__: View results for individual transects
+1) __SEAGRASS EDGE__: View results for estimates of the maximum seagrass edge for individual transects
+1) __DATA DOWNLOADS__: Download transect data and metadata
 
 Some of the plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
 
@@ -556,6 +560,8 @@ knitr::include_graphics('www/plotcontrols.PNG')
 <br>
 
 #### Website information
+
+Nearly all of the data, tables, and plots were created using functions in the tbeptools R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/seagrasstransect.html) for a detailed overview of how you can use these functions on your own to work with the data. 
 
 Technical questions about the TBNI can be sent to [Gary Raulerson](mailto:graulserson@tbep.org).  Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org). The page source content can be viewed on [Github](https://github.com/tbep-tech/seagrasstransect-dash). Like this app? Share it on social media using the [\#TampaBayOpenSci](https://twitter.com/hashtag/TampaBayOpenSci?src=hashtag_click) hashtag.  
 
