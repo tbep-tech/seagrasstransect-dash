@@ -542,13 +542,13 @@ Column {.tabset .tabset-fade data-width=650}
 knitr::include_graphics('www/bannerimage.png')
 ```
 
-Seagrass is an important habitat for fish and other marine animals. It stabilizes sediment, produces oxygen, and reduces shoreline erosion. The coverage, species, and condition of seagrass are significant indicators of ecosystem health in Tampa Bay.  Over the past 40-plus years, reductions in nutrient polulution (primarily nitrogen that fuels algal growth that limits light penetration in the water column) by partners throughout the watershed have signifcantly improved water clarity, leading to increases in seagrass.
+Seagrass is an important habitat for fish and other marine animals. It stabilizes sediment, produces oxygen, and reduces shoreline erosion. The coverage, species, and condition of seagrass are significant indicators of ecosystem health in Tampa Bay.  Over the past 40 years, reductions in nutrient pollution by partners throughout the watershed have significantly improved water clarity, leading to increases in seagrass.
 
-Each year, TBEP partners collect seagrass transect data at fixed locations in Tampa Bay.  These data are used to inform progress on achieving bay goals for seagrass habitat.  Data have been collected since the mid 1990s and are hosted online at the [Tampa Bay Water Atlas](https://www.tampabay.wateratlas.usf.edu/) by the University of South Florida Water Institute.  These data represent nearly thirty years of field sampling and inlude several thousand records on seagrass condition.  This dashboard provides access to these data through a series of tabs that present synthesized results from the raw data. The dashboard is arranged as follows:
+Each year, TBEP partners collect seagrass transect data at fixed locations in Tampa Bay.  These data are used to inform progress on achieving bay goals for seagrass habitat restoration.  Data have been collected since the mid 1990s and are hosted online at the [Tampa Bay Water Atlas](https://www.tampabay.wateratlas.usf.edu/) by the University of South Florida Water Institute.  These data represent nearly thirty years of field sampling and include several thousand records on seagrass condition.  This dashboard provides access to these data through a series of tabs that present synthesized results from the raw data. The dashboard is arranged as follows:
 
 1) __OVERALL SUMMARIES__: View stoplight graphic and changes over time by major bay segments
 1) __SELECTED TRANSECT DATA__: View results for individual transects
-1) __SEAGRASS EDGE__: View results for estimates of the maximum seagrass edge for individual transects
+1) __SEAGRASS EDGE__: View results for estimates of the maximum seagrass edge for individual transects (experimental)
 1) __DATA DOWNLOADS__: Download transect data and metadata
 
 Some of the plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
@@ -561,7 +561,9 @@ knitr::include_graphics('www/plotcontrols.PNG')
 
 #### Website information
 
-Nearly all of the data, tables, and plots were created using functions in the tbeptools R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/seagrasstransect.html) for a detailed overview of how you can use these functions on your own to work with the data. 
+<a href="https://tbep-tech.github.io/tbeptools/" target="__blank" rel="noopener noreferrer"><img class="wp-image-14010 alignnone " src="tbeptoolshex.png" alt="" width="215" height="215" /></a>
+
+Nearly all of the data, tables, and plots were created using functions in the [tbeptools](https://tbep-tech.github.io/tbeptools) R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/seagrasstransect.html) for a detailed overview of how you can use these functions on your own to work with the data. 
 
 Technical questions about the TBNI can be sent to [Gary Raulerson](mailto:graulserson@tbep.org).  Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org). The page source content can be viewed on [Github](https://github.com/tbep-tech/seagrasstransect-dash). Like this app? Share it on social media using the [\#TampaBayOpenSci](https://twitter.com/hashtag/TampaBayOpenSci?src=hashtag_click) hashtag.  
 
@@ -579,7 +581,59 @@ Column {.tabset .tabset-fade data-width=200}
 
 ### USING THIS TAB
 
-Text details here
+This tab can be used to view the seagrass transect stoplight graphic (left plot) and changes over time by major bay segments (right plot). 
+
+The major bay segments shown in each plot are as follows:
+
+* __OTB__: Old Tampa Bay
+* __HB__: Hillsborough Bay
+* __MTB__: Middle Tampa Bay
+* __LTB__: Lower Tampa Bay
+* __BCB__: Boca Ciega Bay
+
+The seagrass species include the five dominant species found in Tampa Bay: 
+
+* *Halodule wrightii*: shoal grass
+* *Syringodium filiforme*: manatee grass
+* *Thalassia testudinum*: turtle grass
+* *Halophila engalmanii*: star grass
+* *Ruppia maritima*: widgeon grass
+
+The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The categories (red, yellow, orange, green) are based on average frequency occurrence estimates across all species in each segment, with breakpoints for the categories at 0%, 25%, 50%, 75%, and 100% frequency occurrences.  Green means higher frequency occurrences (healthy seagrass) and red means lower frequency occurrences (less healthy seagrass).  
+
+The __changes over time__ plot on the right shows similar information as the report card, except the frequency occurrence estimates are shown separately for each species.  Additionally, the estimates are grouped across the segment selection.  Removing a segment at the top will update the plot to show only frequency occurrence estimates for the selected segments.  Likewise, adding or removing species from the selection at the top will add or remove a species from the plot.  
+
+The buttons on the top can be used to select the information shown in each plot. The segment selection buttons can be used to pick which segments are shown in each plot. Click on a label and press the backspace key on your keyboard to remove a segment.  Below, the BCB (Boca Ciega Bay) segment is selected.  It will be removed by hitting the backspace key. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/segmentsel.PNG')
+```
+<br>
+
+After a selection is removed, it appears in the dropdown menu.  Clicking on the text adds it back to the selection. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/segmentsel2.PNG')
+```
+<br>
+
+Similarly, species can be added or removed from the right plot by changing the selection. Below, Halodule is selected and ready to be removed by hitting the backspace key on your keyboard.
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/speciessel.PNG')
+```
+<br>
+
+Finally, the year range can be selected from the slider on the top right.  By default, the entire date range when seagrass transect data are available is shown.  This slider affects both plots. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/yrsel.PNG')
+```
+<br>
 
 Column {data-width=500}
 -----------------------------------------------------------------------
@@ -614,7 +668,64 @@ renderLeaflet(mapplo())
 
 ### USING THIS TAB
 
-Text details here
+This tab shows results for individual transects.  The plots show detailed information for all dates, species, and sites (quadrats) for the selected transect. 
+
+The locations and names of the transects are shown in the __MAP SELECTION__ tab (top left). The selected transect is shown as a red dot on the map and is chosen from the dropdown menu at the top left on the right panel. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/transectsel.PNG')
+```
+<br>
+
+```{r, fig.align = 'center', out.width = '80%'}
+knitr::include_graphics('www/mapsel.PNG')
+```
+<br>
+
+The seagrass species shown in the plots include the five dominant species found in Tampa Bay: 
+
+* *Halodule wrightii*: shoal grass
+* *Syringodium filiforme*: manatee grass
+* *Thalassia testudinum*: turtle grass
+* *Halophila engalmanii*: star grass
+* *Ruppia maritima*: widgeon grass
+
+The __top plot__ shows seagrass abundances for each species, for each date, and at each location along the selected transect (in meters).  This plot provides a detailed assessment of where species were located on a transect and how those locations may have changed over time.  The species are color-coded as shown in the legend.  Each point is sized by the recorded abundance for a species (as Braun-Blanquet, 0-5).  Points that were sampled but had no seagrass are shown as small grey points.
+
+The __bottom plot__ plot shows similar information as the top plot, except the observations for each species along a transect for a given date are shown as overall frequency occurrence estimates.  This can be conceptualized as aggregating the data in the top plot along the x-axis and rotating the plot ninety degrees.  Each vertical grey line in the plot is a sample date.  The plot provides an aggregated assessment of how species abundances are changing over time and which species are dominant at a transect. 
+
+The buttons on the top can be used to select the information shown in each plot. The transect selection is a simple dropdown menu. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/transectsel.PNG')
+```
+<br>
+
+Species can be added or removed from both plots by changing the selection in the top middle selector. Below, Halodule is selected and ready to be removed by hitting the backspace key.
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/speciessel2.PNG')
+```
+<br>
+
+After a selection is removed, it appears in the dropdown menu.  Clicking on the text adds it back to the selection. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/speciessel3.PNG')
+```
+<br>
+
+Finally, the year range can be selected from the slider on the top right.  By default, the entire date range when seagrass transect data are available is shown.  This slider affects both plots. 
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/yrsel.PNG')
+```
+<br>
 
 Column {data-width=500}
 -----------------------------------------------------------------------
@@ -643,12 +754,32 @@ Column {.tabset .tabset-fade data-width=200}
 
 ### USING THIS TAB
 
-Text details here
+This is an experimental tab to view estimates of the maximum seagrass edge for individual transects.  Plots in this tab are based on seagrass presence/absence data at each transect referenced with a consistent [bathymetric](https://www.ngdc.noaa.gov/mgg/bathymetry/estuarine/) (bottom depth) data layer for Tampa Bay.  Methods in this tab attempt to estimate the location on the transect where abundance declines rapidly.  This location is then matched with the depth value from the bathymetric layer.  Comparing multiple estimates over time provides an assessment of how the seagrass edge has changed.  Increases or decreases in the seagrass depth edge may suggest water quality changes that can negatively impact seagrasses. 
 
+The __DEPTH BY DISTANCE__ tab shows depth (cm) against transect position (m) at every date for the selected transect.  Transect sampling points with seagrass present are in green and with seagrass absent are in red. Green points are also sized by relative abundance (average Braun-Blanquet for all species).  Data for each date provide the basis for assessing the seagrass depth edge. 
+
+The __DATE RESULTS__ tab shows data for a selected date for the selected transect. The two plots in this tab demonstrate how the seagrass edge is estimated.  The left plot shows mean abundance against transect position.  If possible, a logistic curve is estimated for these data to approximate the theoretical decrease in abundance as sampling progresses along the transect (black curve).  If a curve is estimated, a linear curve is fit through the inflection point on the downslope of the logistic curve.  This represents the point of maximum decrease in abundance with location. Although seagrass can occur beyond this limit, it represents a physiological limit beyond which abundance is in constant decline with depth.  The vertical line with shaded areas is this limit +/- 95% confidence. The right plot shows the same results but linking the site limit line to depth.  The two are transposed using a linear regression fit between depth and transect position.  The horizontal red line with shaded areas is the seagrass edge estimate +/- 95% confidence. 
+
+<br>
+```{r, fig.align = 'center', out.width = '100%'}
+knitr::include_graphics('www/edgeex.PNG')
+```
+<br>
+
+The __EDGE TRENDS BY SITE__ tab shows the trends in the seagrass edge estimates over time where estimation was possible. The black points with 95% confidence intervals are the seagrass edge estimates from the horizontal red lines in the second tab.  If sufficient estimates are available, this plot can be used to determine if the edge estimates are changing over time. The vertical ticks on the x-axis show sample dates to provide a comparison to the available edge estimates.
+
+The transect selection is made from the top dropdown menu.  The date selection only applies to the second tab.    
+
+<br>
+```{r, fig.align = 'center', out.width = '70%'}
+knitr::include_graphics('www/transectsel.PNG')
+```
+<br>
 
 Column {data-width=500, .tabset .tabset-fade}
 -----------------------------------------------------------------------
 
+<br>
 ```{r}
 column(12,
   selectInput(inputId = 'trnsel2', label = 'Select transect:', choices = demtrns, selected = demtrns[1])
