@@ -41,9 +41,14 @@ fml <- 'Lato Light'
 # for shiny server
 st_crs(trnpts) <- 4326
 
+# remove transect not in transect data
 trnpts <- trnpts %>% 
   filter(TRAN_ID %in% unique(transect$Transect)) %>% 
   filter(!duplicated(TRAN_ID))
+trnlns <- trnlns %>% 
+  filter(Site %in% unique(transect$Transect)) %>% 
+  filter(Site %in% trnpts$TRAN_ID) %>% 
+  filter(!duplicated(Site))
 
 # base map
 m <- mapview(trnpts, homebutton = F, legend = F) %>% 
@@ -579,9 +584,16 @@ Citation info here: forthcoming
 Column {.tabset .tabset-fade data-width=200}
 -----------------------------------------------------------------------
 
+### TRANSECT LOCATIONS
+
+```{r}
+mapview(trnpts, label = trnpts$lab, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F) + 
+  mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
+```
+
 ### USING THIS TAB
 
-This tab can be used to view the seagrass transect stoplight graphic (left plot) and changes over time by major bay segments (right plot). 
+This tab can be used to view the seagrass transect stoplight graphic (left plot) and changes over time by major bay segments (right plot).  The __TRANSECT LOCATIONS__ tab on the top left shows the transect locations and responsible monitoring agency. 
 
 The major bay segments shown in each plot are as follows:
 
