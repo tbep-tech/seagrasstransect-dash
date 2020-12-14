@@ -552,7 +552,7 @@ Seagrass is an important habitat for fish and other marine animals. It stabilize
 Each year, TBEP partners collect seagrass transect data at fixed locations in Tampa Bay.  These data are used to inform progress on achieving bay goals for seagrass habitat restoration.  Data have been collected since the mid 1990s and are hosted online at the [Tampa Bay Water Atlas](https://www.tampabay.wateratlas.usf.edu/) by the University of South Florida Water Institute.  These data represent nearly thirty years of field sampling and include several thousand records on seagrass condition.  This dashboard provides access to these data through a series of tabs that present synthesized results from the raw data. The dashboard is arranged as follows:
 
 1) __OVERALL SUMMARIES__: View stoplight graphic and changes over time by major bay segments
-1) __SELECTED TRANSECT DATA__: View results for individual transects
+1) __INDIVIDUAL TRANSECTS__: View results for individual transects
 1) __SEAGRASS EDGE__: View results for estimates of the maximum seagrass edge for individual transects (experimental)
 1) __DATA DOWNLOADS__: Download transect data and metadata
 
@@ -666,7 +666,7 @@ fillCol(flex = c(0.1, 1),
 )
 ```
 
-2 SELECTED TRANSECT DATA
+2 INDIVIDUAL TRANSCTS
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=200}
