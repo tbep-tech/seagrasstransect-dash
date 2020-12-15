@@ -576,6 +576,11 @@ Like this app? Share it on social media using the [\#TampaBayOpenSci](https://tw
 
 Citation info here: [![DOI](https://zenodo.org/badge/319050934.svg)](https://zenodo.org/badge/latestdoi/319050934)
 
+<br>
+```{r, fig.align='center', out.width = '50%'}
+knitr::include_graphics('www/Shoal-Grass-Textured.png')
+```
+
 </div>
 <div class = "col-md-2"></div>
 </div>
@@ -649,6 +654,12 @@ knitr::include_graphics('www/yrsel.PNG')
 ```
 <br>
 
+<br>
+```{r, fig.align='center', out.width = '50%'}
+knitr::include_graphics('www/Turtlegrass-2-Textured.png')
+```
+<br>
+
 Column {data-width=500}
 -----------------------------------------------------------------------
 
@@ -668,7 +679,7 @@ fillCol(flex = c(0.1, 1),
 )
 ```
 
-2 INDIVIDUAL TRANSCTS
+2 INDIVIDUAL TRANSECTS
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=200}
@@ -741,6 +752,12 @@ knitr::include_graphics('www/yrsel.PNG')
 ```
 <br>
 
+<br>
+```{r, fig.align='center', out.width = '50%'}
+knitr::include_graphics('www/Turtlegrass-Textured.png')
+```
+<br>
+
 Column {data-width=500}
 -----------------------------------------------------------------------
 
@@ -787,6 +804,12 @@ The transect selection is made from the top dropdown menu.  The date selection o
 <br>
 ```{r, fig.align = 'center', out.width = '70%'}
 knitr::include_graphics('www/transectsel.PNG')
+```
+<br>
+
+<br>
+```{r, fig.align='center', out.width = '60%'}
+knitr::include_graphics('www/Manatee-Grass-Textured.png')
 ```
 <br>
 
@@ -894,4 +917,10 @@ __Transect locations__: Transect location data (EPSG 4326), including responsibl
 * *lon_dd*: Longitude in decimal degrees
 * *mon_agency*: Responsible monitoring agency for collecting data at the transect
 * *bay_segment*: Bay segment where the transect is located
+
+<br>
+```{r, fig.align='center', out.width = '25%'}
+knitr::include_graphics('www/Turtlegrass-Textured.png')
+```
+<br>
 
