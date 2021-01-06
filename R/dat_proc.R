@@ -87,9 +87,3 @@ transectdem <- trn %>%
   )
 
 save(transectdem, file = 'data/transectdem.RData', compress = 'xz')
-
-# seagrass edge estimates -------------------------------------------------
-
-data(transectdem)
-
-transectedg <- transectdem
