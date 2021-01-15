@@ -581,6 +581,8 @@ Citation info here: [![DOI](https://zenodo.org/badge/319050934.svg)](https://zen
 knitr::include_graphics('www/Shoal-Grass-Textured.png')
 ```
 
+<center><p style="font-size:11px">Seagrass graphics courtesy of the Integration and Application Network, University of Maryland Center for Environmental Science ([ian.umces.edu/symbols/](https://ian.umces.edu/symbols/)).</p></center>
+
 </div>
 <div class = "col-md-2"></div>
 </div>
