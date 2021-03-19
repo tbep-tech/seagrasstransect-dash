@@ -622,7 +622,7 @@ The seagrass species include the five dominant species found in Tampa Bay:
 * *Halophila engalmanii*: star grass
 * *Ruppia maritima*: widgeon grass
 
-The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The categories (red, yellow, orange, green) are based on average frequency occurrence estimates across all species in each segment, with breakpoints for the categories at 0%, 25%, 50%, 75%, and 100% frequency occurrences.  Green means higher frequency occurrences (healthy seagrass) and red means lower frequency occurrences (less healthy seagrass).  
+The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
 
 The __changes over time__ plot on the right shows similar information as the report card, except the frequency occurrence estimates are shown separately for each species.  Additionally, the estimates are grouped across the segment selection.  Removing a segment at the top will update the plot to show only frequency occurrence estimates for the selected segments.  Likewise, adding or removing species from the selection at the top will add or remove a species from the plot.  
 
