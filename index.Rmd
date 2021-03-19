@@ -97,7 +97,7 @@ matplo <- reactive({
   
   tots <- ifelse('all' %in% segsel1, T, F)
   
-  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots)
+  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, neutral = T, yrrng = yrssel1, total = tots)
   
   return(p)
   
