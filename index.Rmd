@@ -5,6 +5,8 @@ output:
      logo: www/tarponlogo.png
      social: menu
      source_code: "https://github.com/tbep-tech/seagrasstransect-dash"
+     includes:
+        in_header: google-analytics.html
 runtime: shiny
 css: styles.css
 ---
