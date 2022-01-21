@@ -81,6 +81,7 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
 # globals
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
+sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF')
 trns <- sort(unique(transect$Transect))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
@@ -99,7 +100,7 @@ matplo <- reactive({
   
   tots <- ifelse('all' %in% segsel1, T, F)
   
-  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, neutral = T, yrrng = yrssel1, total = tots)
+  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, neutral = T, yrrng = yrssel1, total = tots, sppcol = sppcol)
   
   return(p)
   
@@ -120,7 +121,7 @@ aveplo <- reactive({
   tots <- ifelse('total' %in% sppsel1, T, F)
   sppsel1 <- sppsel1[!sppsel1 %in% 'total']
     
-  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots) %>% 
+  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots, sppcol = sppcol) %>% 
     layout(
       title = list(text = NA)
     )
@@ -164,7 +165,7 @@ trnplo <- reactive({
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
-  p <- show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2) %>% 
+  p <- show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2, sppcol = sppcol) %>% 
     layout(
       title = list(text = NA), 
       legend = list(title = list(text = 'Abundance (BB)'))
@@ -183,7 +184,7 @@ sumplo <- reactive({
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
-  p <- show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2) %>% 
+  p <- show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
     layout(
       title = list(text = NA),
       legend = list(title = list(text = NA)),
