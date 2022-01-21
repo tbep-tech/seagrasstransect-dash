@@ -676,7 +676,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     selectInput(inputId = 'segsel1', label = 'Select segments:', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
     selectInput(inputId = 'sppsel1', label = 'Select species:', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2020, value = c(1998, 2020), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2021, value = c(1998, 2021), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
     renderPlotly(matplo()),
@@ -774,7 +774,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     selectInput(inputId = 'trnsel1', label = 'Select transect:', choices = trns, selected = trns[1], width = '90%'),
     selectInput(inputId = 'sppsel2', label = 'Select species:', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2020, value = c(1998, 2020), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2021, value = c(1998, 2021), step = 1, sep = '', width = '90%')
   ),
   fillCol(flex = c(1, 1),
     renderPlotly(trnplo()),
