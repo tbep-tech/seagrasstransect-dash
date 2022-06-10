@@ -18,10 +18,12 @@ source('R/funcs.R')
 
 # import entire transect dataset as JSON
 transect <- read_transect(training = FALSE) %>% 
-  dplyr::select(-Crew, -MonitoringAgency)
+  dplyr::select(-Crew, -MonitoringAgency) %>% 
+  arrange(desc(Date))
 
 # get transect species occurrence summaries
-transectocc <- anlz_transectocc(transect)
+transectocc <- anlz_transectocc(transect) %>% 
+  arrange(desc(Date))
 
 save(transect, file = 'data/transect.RData', compress = 'xz')
 save(transectocc, file = 'data/transectocc.RData', compress = 'xz')
