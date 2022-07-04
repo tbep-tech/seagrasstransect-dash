@@ -82,7 +82,7 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
 sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF')
-trns <- sort(unique(transect$Transect))
+trns <- sort(intersect(unique(transect$Transect), trnpts$TRAN_ID))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 ```
