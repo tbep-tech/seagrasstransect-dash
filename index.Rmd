@@ -343,7 +343,7 @@ alledgdat <- reactive({
   
   # input
   demdat <- demdat()
-  
+
   req(demdat)
 
   out <- demdat %>%
@@ -358,6 +358,9 @@ alledgdat <- reactive({
           sens() %>% 
           dep_est(., x)
         })
+     
+        if(inherits(out, 'try-error'))
+          out <- NA
         
         return(out)
       
@@ -366,7 +369,7 @@ alledgdat <- reactive({
     select(-data) %>% 
     unnest('ests') %>% 
     dplyr::filter(!var %in% 'Site') %>% 
-    select(-ests, -var)
+    select(-var)
   
   return(out)
   
@@ -377,7 +380,7 @@ alledgplo <- reactive({
   
   # inpu
   alledgdat <- alledgdat()  
- 
+
   validate(
     need(length(na.omit(alledgdat)) > 0, 'No estimates available for transect')
   )
