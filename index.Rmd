@@ -576,7 +576,7 @@ knitr::include_graphics('www/plotcontrols.PNG')
 
 The page source content can be viewed on [Github](https://github.com/tbep-tech/seagrasstransect-dash). Nearly all of the data, tables, and plots were created using functions in the [tbeptools](https://tbep-tech.github.io/tbeptools) R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/seagrasstransect.html) for a detailed overview of how you can use these functions on your own to work with the data. 
 
-Technical questions about the seagrass transect data can be sent to [Gary Raulerson](mailto:graulserson@tbep.org).  Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org).
+Technical questions about the seagrass transect data can be sent to [Sheila Scolaro](mailto:sscolaro@tbep.org).  Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org).
 
 Like this app? Share it on social media using the [\#TampaBayOpenSci](https://twitter.com/hashtag/TampaBayOpenSci?src=hashtag_click) hashtag.  
 
