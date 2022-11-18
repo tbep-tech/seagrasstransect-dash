@@ -16,11 +16,19 @@ source('R/funcs.R')
 
 # transect data -----------------------------------------------------------
 
-# import entire transect dataset as JSON
+# import entire transect dataset as JSON, remove PP sampling
 transect <- read_transect(training = FALSE) %>% 
   dplyr::select(-Crew, -MonitoringAgency) %>% 
-  arrange(desc(Date))
-
+  arrange(desc(Date)) %>%
+  filter(
+    !((Transect == 'S3T5' & Date == as.Date('2021-04-07')) |
+    (Transect == 'S3T6' & Date %in% as.Date(c('2021-04-07', '2021-04-09'))) | 
+    (Transect == 'S4T1' & Date == as.Date('2021-04-08')) |
+    (Transect == 'S4T2' & Date == as.Date('2021-04-08')) |
+    (Transect == 'S4T3' & Date == as.Date('2021-04-08')))
+  ) %>% 
+  filter(Date < as.Date('2022-08-01'))
+  
 # get transect species occurrence summaries
 transectocc <- anlz_transectocc(transect) %>% 
   arrange(desc(Date))
