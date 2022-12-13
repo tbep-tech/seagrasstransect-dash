@@ -26,8 +26,7 @@ transect <- read_transect(training = FALSE) %>%
     (Transect == 'S4T1' & Date == as.Date('2021-04-08')) |
     (Transect == 'S4T2' & Date == as.Date('2021-04-08')) |
     (Transect == 'S4T3' & Date == as.Date('2021-04-08')))
-  ) %>% 
-  filter(Date < as.Date('2022-08-01'))
+  )
   
 # get transect species occurrence summaries
 transectocc <- anlz_transectocc(transect) %>% 
