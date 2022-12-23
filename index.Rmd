@@ -628,7 +628,7 @@ The seagrass species include the five dominant species found in Tampa Bay:
 * *Halophila engalmanii*: star grass
 * *Ruppia maritima*: widgeon grass
 
-The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
+The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all seagrass species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
 
 The __changes over time__ plot on the right shows similar information as the report card, except the frequency occurrence estimates are shown separately for each species.  Additionally, the estimates are grouped across the segment selection.  Removing a segment at the top will update the plot to show only frequency occurrence estimates for the selected segments.  Likewise, adding or removing species from the selection at the top will add or remove a species from the plot.  
 
@@ -678,8 +678,8 @@ Column {data-width=500}
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    selectInput(inputId = 'segsel1', label = 'Select segments:', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
-    selectInput(inputId = 'sppsel1', label = 'Select species:', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
+    selectInput(inputId = 'segsel1', label = 'Select segments (backspace to remove):', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
+    selectInput(inputId = 'sppsel1', label = 'Select species (backspace to remove):', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2022, value = c(1998, 2022), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
@@ -777,7 +777,7 @@ Column {data-width=500}
 fillCol(flex = c(0.1, 1),
   fillRow(
     selectInput(inputId = 'trnsel1', label = 'Select transect:', choices = trns, selected = trns[1], width = '90%'),
-    selectInput(inputId = 'sppsel2', label = 'Select species:', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
+    selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2022, value = c(1998, 2022), step = 1, sep = '', width = '90%')
   ),
   fillCol(flex = c(1, 1),
