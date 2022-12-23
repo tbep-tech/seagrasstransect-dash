@@ -52,6 +52,9 @@ trnlns <- trnlns %>%
   filter(Site %in% trnpts$TRAN_ID) %>% 
   filter(!duplicated(Site))
 
+# initial transect selection 
+trninit <- 'S1T17'
+
 # base map
 m <- mapview(trnpts, homebutton = F, legend = F) %>% 
   .@map %>% 
@@ -76,13 +79,24 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
     style = list(
       'color' = 'darkgreen'
     )
-  )) 
+  )) %>% 
+  addCircleMarkers(
+    data = trnpts[trnpts$TRAN_ID %in% trninit, ],
+    layerId = 'seltrn',
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = 'red',
+    weight = 1,
+    fillOpacity = 1,
+    radius= 6,
+    label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+  ) 
 
 # globals
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
 sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF')
-trns <- sort(intersect(unique(transect$Transect), trnpts$TRAN_ID))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 ```
@@ -131,18 +145,20 @@ aveplo <- reactive({
 })
 
 # map selection
-mapplo <- reactive({
+mapplo <- leafletProxy('mapplo')
+observeEvent(input$mapplo_marker_click, {
   
   # input
-  trnsel1 <- input$trnsel1
-  
+  trnsel1 <- input$mapplo_marker_click$id
+
   toadd <- trnpts %>% 
     filter(TRAN_ID %in% trnsel1)
 
-  mout <- m %>% 
+  mapplo <- mapplo %>%
+    removeMarker('seltrn') %>% 
     addCircleMarkers(
       data = toadd,
-      layerId = ~TRAN_ID,
+      layerId = 'seltrn',
       stroke = TRUE,
       color = 'black',
       fill = TRUE,
@@ -153,18 +169,19 @@ mapplo <- reactive({
       label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
     ) 
   
-  return(mout)
-  
 })
 
 # transect plot over time
 trnplo <- reactive({
   
   # input
-  trnsel1 <- input$trnsel1
+  trnsel1 <- input$mapplo_marker_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
+  if(is.null(trnsel1))
+    trnsel1 <- trninit
+    
   p <- show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2, sppcol = sppcol) %>% 
     layout(
       title = list(text = NA), 
@@ -180,9 +197,12 @@ trnplo <- reactive({
 sumplo <- reactive({
   
   # input
-  trnsel1 <- input$trnsel1
+  trnsel1 <- input$mapplo_marker_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
+  
+  if(is.null(trnsel1))
+    trnsel1 <- trninit
   
   p <- show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
     layout(
@@ -698,7 +718,8 @@ Column {.tabset .tabset-fade data-width=200}
 ### MAP SELECTION
 
 ```{r}
-renderLeaflet(mapplo())
+output$mapplo <- renderLeaflet(m)
+leafletOutput('mapplo')
 ```
 
 ### USING THIS TAB
@@ -776,7 +797,7 @@ Column {data-width=500}
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    selectInput(inputId = 'trnsel1', label = 'Select transect:', choices = trns, selected = trns[1], width = '90%'),
+    HTML('<b>Select a transect by clicking a marker on the map</b>'),
     selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2022, value = c(1998, 2022), step = 1, sep = '', width = '90%')
   ),
