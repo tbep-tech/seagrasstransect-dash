@@ -345,7 +345,7 @@ dep_est <- function(res, dt){
   mod <- lm(Depth_dem~Site, data = dt)
   dep <- predict(mod, newdata = preddat)
 
-  out <- tibble(
+  out <- dplyr::tibble(
     var = c('Depth_dem', 'Site'), 
     lo = c(dep[1], lo), 
     z_cmed = c(dep[2], z_cmed), 
