@@ -14,19 +14,9 @@ css: styles.css
 ```{r setup, include=F}
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
 
-library(flexdashboard)
-library(tidyverse)
-library(tbeptools)
-# devtools::load_all('../tbeptools')
-library(mapview)
-library(leaflet)
-library(sf)
-library(reactable)
-library(shinydashboard)
-library(plotly)
-library(shinyWidgets)
-library(extrafont)
-library(patchwork)
+box::use(
+  dplyr[`%>%`]
+)
 
 source('R/funcs.R')
 
@@ -34,6 +24,8 @@ source('R/funcs.R')
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
 
+data('trnpts', package = 'tbeptools')
+data('trnlns', package = 'tbeptools')
 load(file = 'data/transect.RData')
 load(file = 'data/transectocc.RData')
 load(file = 'data/transectdem.RData')
@@ -41,22 +33,25 @@ load(file = 'data/transectdem.RData')
 fml <- 'Lato Light'
 
 # for shiny server
-st_crs(trnpts) <- 4326
+sf::st_crs(trnpts) <- 4326
 
 # remove transect not in transect data
 trnpts <- trnpts %>% 
-  filter(TRAN_ID %in% unique(transect$Transect)) %>% 
-  filter(!duplicated(TRAN_ID))
+  dplyr::filter(TRAN_ID %in% unique(transect$Transect)) %>% 
+  dplyr::filter(!duplicated(TRAN_ID))
 trnlns <- trnlns %>% 
-  filter(Site %in% unique(transect$Transect)) %>% 
-  filter(Site %in% trnpts$TRAN_ID) %>% 
-  filter(!duplicated(Site))
+  dplyr::filter(Site %in% unique(transect$Transect)) %>% 
+  dplyr::filter(Site %in% trnpts$TRAN_ID) %>% 
+  dplyr::filter(!duplicated(Site))
+
+# initial transect selection 
+trninit <- 'S1T17'
 
 # base map
-m <- mapview(trnpts, homebutton = F, legend = F) %>% 
+m <- mapview::mapview(trnpts, homebutton = F, legend = F) %>% 
   .@map %>% 
-  clearMarkers() %>% 
-  addCircleMarkers(
+  leaflet::clearMarkers() %>% 
+  leaflet::addCircleMarkers(
     data = trnpts,
     layerId = ~TRAN_ID,
     stroke = TRUE,
@@ -68,7 +63,7 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
     radius= 4,
     label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
   ) %>% 
-  addLabelOnlyMarkers(data = trnpts, ~0.99995 * LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = labelOptions(
+  leaflet::addLabelOnlyMarkers(data = trnpts, ~0.99995 * LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = leaflet::labelOptions(
     noHide = T, 
     direction = 'auto', 
     textOnly = T,
@@ -76,13 +71,24 @@ m <- mapview(trnpts, homebutton = F, legend = F) %>%
     style = list(
       'color' = 'darkgreen'
     )
-  )) 
+  )) %>% 
+  leaflet::addCircleMarkers(
+    data = trnpts[trnpts$TRAN_ID %in% trninit, ],
+    layerId = 'seltrn',
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = 'red',
+    weight = 1,
+    fillOpacity = 1,
+    radius= 6,
+    label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+  ) 
 
 # globals
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa")
 sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF')
-trns <- sort(intersect(unique(transect$Transect), trnpts$TRAN_ID))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 ```
@@ -100,7 +106,7 @@ matplo <- reactive({
   
   tots <- ifelse('all' %in% segsel1, T, F)
   
-  p <- show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, neutral = T, yrrng = yrssel1, total = tots)
+  p <- tbeptools::show_transectmatrix(transectocc, bay_segment = segsel1, plotly = T, family = fml, neutral = T, yrrng = yrssel1, total = tots)
   
   return(p)
   
@@ -121,8 +127,8 @@ aveplo <- reactive({
   tots <- ifelse('total' %in% sppsel1, T, F)
   sppsel1 <- sppsel1[!sppsel1 %in% 'total']
     
-  p <- show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots, sppcol = sppcol) %>% 
-    layout(
+  p <- tbeptools::show_transectavespp(transectocc, bay_segment = segsel1, species = sppsel1, plotly = T, family = fml, yrrng = yrssel1, total = tots, sppcol = sppcol) %>% 
+    plotly::layout(
       title = list(text = NA)
     )
   
@@ -131,18 +137,20 @@ aveplo <- reactive({
 })
 
 # map selection
-mapplo <- reactive({
+mapplo <- leaflet::leafletProxy('mapplo')
+observeEvent(input$mapplo_marker_click, {
   
   # input
-  trnsel1 <- input$trnsel1
-  
-  toadd <- trnpts %>% 
-    filter(TRAN_ID %in% trnsel1)
+  trnsel1 <- input$mapplo_marker_click$id
 
-  mout <- m %>% 
-    addCircleMarkers(
+  toadd <- trnpts %>% 
+    dplyr::filter(TRAN_ID %in% trnsel1)
+
+  mapplo <- mapplo %>%
+    leaflet::removeMarker('seltrn') %>% 
+    leaflet::addCircleMarkers(
       data = toadd,
-      layerId = ~TRAN_ID,
+      layerId = 'seltrn',
       stroke = TRUE,
       color = 'black',
       fill = TRUE,
@@ -153,20 +161,21 @@ mapplo <- reactive({
       label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
     ) 
   
-  return(mout)
-  
 })
 
 # transect plot over time
 trnplo <- reactive({
   
   # input
-  trnsel1 <- input$trnsel1
+  trnsel1 <- input$mapplo_marker_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
-  p <- show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2, sppcol = sppcol) %>% 
-    layout(
+  if(is.null(trnsel1))
+    trnsel1 <- trninit
+    
+  p <- tbeptools::show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2, sppcol = sppcol) %>% 
+    plotly::layout(
       title = list(text = NA), 
       legend = list(title = list(text = 'Abundance (BB)'))
     )
@@ -180,12 +189,15 @@ trnplo <- reactive({
 sumplo <- reactive({
   
   # input
-  trnsel1 <- input$trnsel1
+  trnsel1 <- input$mapplo_marker_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
-  p <- show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
-    layout(
+  if(is.null(trnsel1))
+    trnsel1 <- trninit
+  
+  p <- tbeptools::show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
+    plotly::layout(
       title = list(text = NA),
       legend = list(title = list(text = NA)),
       xaxis = list(title = list(text = 'Year'))
@@ -202,7 +214,7 @@ demdat <- reactive({
   trnsel2 <- input$trnsel2
 
   out <- transectdem %>% 
-    filter(Transect %in% trnsel2)
+    dplyr::filter(Transect %in% trnsel2)
   
   return(out)
   
@@ -214,18 +226,18 @@ demplo <- reactive({
   # input
   demdat <- demdat() 
   
-  p <- ggplot(demdat, aes(y = Depth_dem, x = Site, group = Date)) + 
-    geom_line() + 
-    geom_point(aes(colour = patxt, size = meanabu)) + 
-    facet_wrap(~Date) +
-    scale_size('Mean abundance', range = c(2, 6)) + 
-    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
-    theme_minimal(base_size = 18, base_family = fml) + 
-    guides(colour = guide_legend(override.aes = list(size = 4))) +
+  p <- ggplot2::ggplot(demdat, ggplot2::aes(y = Depth_dem, x = Site, group = Date)) + 
+    ggplot2::geom_line() + 
+    ggplot2::geom_point(ggplot2::aes(colour = patxt, size = meanabu)) + 
+    ggplot2::facet_wrap(~Date) +
+    ggplot2::scale_size('Mean abundance', range = c(2, 6)) + 
+    ggplot2::scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
+    ggplot2::theme_minimal(base_size = 18, base_family = fml) + 
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 4))) +
     # theme(
       # legend.title = element_blank()
     # ) + 
-    labs(
+    ggplot2::labs(
       x = 'Transect position (m)', 
       y = 'Depth, topographic (cm)'
     )
@@ -245,8 +257,8 @@ dtdemplo <- reactive({
 
   # subset date data from demdat
   dt <- demdat %>% 
-    filter(Date %in% as.Date(dtssel1)) %>% 
-    st_set_geometry(NULL) #%>% 
+    dplyr::filter(Date %in% as.Date(dtssel1)) %>% 
+    sf::st_set_geometry(NULL) #%>% 
     # filter(Site >= 0)
 
   # site estimate
@@ -258,26 +270,26 @@ dtdemplo <- reactive({
     dep_est(., dt)
 
   # abundance by site
-  p1 <- ggplot() + 
-    geom_point(data = dt, aes(x = Site, y = meanabu, group = Date, colour = patxt, size = -1 * Depth_dem)) + 
-    scale_size('Depth (cm)', range = c(4, 9)) + 
-    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
-    theme_minimal(base_size = 18, base_family = fml) + 
-    guides(colour = guide_legend(override.aes = list(size = 4))) +
-    labs(
+  p1 <- ggplot2::ggplot() + 
+    ggplot2::geom_point(data = dt, ggplot2::aes(x = Site, y = meanabu, group = Date, colour = patxt, size = -1 * Depth_dem)) + 
+    ggplot2::scale_size('Depth (cm)', range = c(4, 9)) + 
+    ggplot2::scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) + 
+    ggplot2::theme_minimal(base_size = 18, base_family = fml) + 
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 4))) +
+    ggplot2::labs(
       x = 'Transect position (m)', 
       y = 'Mean abundance'
     )
   
   # depth by site
-  p2 <- ggplot() + 
-    geom_line(data = dt, aes(x = Site, y = Depth_dem, group = Date)) +
-    geom_point(data = dt, aes(x = Site, y = Depth_dem, group = Date, colour = patxt, size = meanabu)) +  
-    scale_size('Mean abundance', range = c(4, 9)) + 
-    scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) +
-    theme_minimal(base_size = 18, base_family = fml) + 
-    guides(colour = guide_legend(override.aes = list(size = 4))) +
-    labs(
+  p2 <- ggplot2::ggplot() + 
+    ggplot2::geom_line(data = dt, ggplot2::aes(x = Site, y = Depth_dem, group = Date)) +
+    ggplot2::geom_point(data = dt, ggplot2::aes(x = Site, y = Depth_dem, group = Date, colour = patxt, size = meanabu)) +  
+    ggplot2::scale_size('Mean abundance', range = c(4, 9)) + 
+    ggplot2::scale_colour_manual('Seagrass', values = c('darkolivegreen4', 'indianred2')) +
+    ggplot2::theme_minimal(base_size = 18, base_family = fml) + 
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 4))) +
+    ggplot2::labs(
       x = 'Transect position (m)', 
       y = 'Depth (cm)'
     )
@@ -295,19 +307,19 @@ dtdemplo <- reactive({
     
     # title
     rnd <- res %>% 
-      mutate_if(is.numeric, round, 1) %>% 
+      dplyr::mutate_if(is.numeric, round, 1) %>% 
       data.frame
     ttl <- paste0('Site edge (m): ', rnd[[2, 3]], ' (', paste0(c(rnd[[2, 2]], rnd[[2, 4]]), collapse = ', '), ')')
     ttl <- paste0(ttl, ', ', 'Seagrass edge (cm): ', rnd[[1, 3]], ' (', paste0(c(rnd[[1, 2]], rnd[[1, 4]]), collapse = ', '), ')')
     
     # add site estimate and error
     p1 <- p1 +
-      stat_function(fun = est_fun, colour = 'grey', alpha = 0.8) + 
-      geom_line(data = preds, aes(x = Site, y = sg_prp)) +
-      geom_vline(data = res[2, ], aes(xintercept = z_cmed, linetype = 'Site edge'), color = 'blue') + 
-      geom_rect(data = res[2, ], aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
-      scale_linetype(name = NULL) +
-      coord_cartesian(ylim = c(min(preds$sg_prp, na.rm = T), max(preds$sg_prp, na.rm = T)))
+      ggplot2::stat_function(fun = est_fun, colour = 'grey', alpha = 0.8) + 
+      ggplot2::geom_line(data = preds, ggplot2::aes(x = Site, y = sg_prp)) +
+      ggplot2::geom_vline(data = res[2, ], ggplot2::aes(xintercept = z_cmed, linetype = 'Site edge'), color = 'blue') + 
+      ggplot2::geom_rect(data = res[2, ], ggplot2::aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
+      ggplot2::scale_linetype(name = NULL) +
+      ggplot2::coord_cartesian(ylim = c(min(preds$sg_prp, na.rm = T), max(preds$sg_prp, na.rm = T)))
     
     # res transposed for p2
     res2 <- res %>% 
@@ -318,21 +330,21 @@ dtdemplo <- reactive({
     p2 <- p2 +
       # geom_errorbarh(data = res[2, ], aes(xmin = lo, xmax = hi, y = res[res$var == 'Depth_dem', 'z_cmed'][[1]]), height = 0) +
       # geom_errorbar(data = res[1, ], aes(ymin = lo, ymax = hi, x = res[res$var == 'Site', 'z_cmed'][[1]]), width = 0) +
-      geom_smooth(data = dt, aes(x = Site, y = Depth_dem), method = 'lm', se = F, color = 'grey') + 
-      geom_rect(data = res[1, ], aes(ymin = lo, ymax = hi, xmin = -Inf, xmax = Inf), alpha = 0.2, fill = 'tomato1') +
-      geom_rect(data = res[2, ], aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
-      geom_vline(data = res[2, ], aes(xintercept = z_cmed), color = 'blue') + 
-      geom_hline(data = res[1, ], aes(yintercept = z_cmed, linetype = 'Seagrass edge'), color = 'red') +
-      scale_linetype(name = NULL)
+      ggplot2::geom_smooth(data = dt, ggplot2::aes(x = Site, y = Depth_dem), method = 'lm', se = F, color = 'grey') + 
+      ggplot2::geom_rect(data = res[1, ], ggplot2::aes(ymin = lo, ymax = hi, xmin = -Inf, xmax = Inf), alpha = 0.2, fill = 'tomato1') +
+      ggplot2::geom_rect(data = res[2, ], ggplot2::aes(xmin = lo, xmax = hi, ymin = -Inf, ymax = Inf), alpha = 0.2, fill = 'lightblue') +
+      ggplot2::geom_vline(data = res[2, ], ggplot2::aes(xintercept = z_cmed), color = 'blue') + 
+      ggplot2::geom_hline(data = res[1, ], ggplot2::aes(yintercept = z_cmed, linetype = 'Seagrass edge'), color = 'red') +
+      ggplot2::scale_linetype(name = NULL)
       # geom_point(data = res2[res2$est == 'z_cmed', ], aes(x = Site, y = Depth_dem), color = 'blue', size = 4) 
     
   }
   
   # add title
   p1 <- p1 +
-    ggtitle(ttl)
+    ggplot2::ggtitle(ttl)
   
-  p <- p1 + p2 + plot_layout(ncol = 2)
+  p <- p1 + p2 + patchwork::plot_layout(ncol = 2)
   
   return(p)
   
@@ -347,12 +359,12 @@ alledgdat <- reactive({
   req(demdat)
 
   out <- demdat %>%
-    group_by(Date) %>% 
-    nest() %>% 
-    mutate(
+    dplyr::group_by(Date) %>% 
+    tidyr::nest() %>% 
+    dplyr::mutate(
       ests = purrr::map(data, function(x){
 
-        x <- arrange(x, Site)
+        x <- dplyr::arrange(x, Site)
   
         out <- try({doc_est(x) %>% 
           sens() %>% 
@@ -366,10 +378,10 @@ alledgdat <- reactive({
       
       })
     ) %>% 
-    select(-data) %>% 
-    unnest('ests') %>% 
+    dplyr::select(-data) %>% 
+    tidyr::unnest('ests') %>% 
     dplyr::filter(!var %in% 'Site') %>% 
-    select(-var)
+    dplyr::select(-var)
   
   return(out)
   
@@ -385,18 +397,18 @@ alledgplo <- reactive({
     need(length(na.omit(alledgdat)) > 0, 'No estimates available for transect')
   )
 
-  p <- ggplot(alledgdat, aes(x = Date, y = z_cmed)) + 
-    geom_rug(sides = 'b', size = 1) + 
-    geom_line() +
-    geom_errorbar(aes(ymin = lo, ymax = hi)) + 
-    geom_point(size = 4) +
-    theme_minimal(base_size = 18, base_family = fml) + 
-    guides(colour = guide_legend(override.aes = list(size = 4))) +
-    theme(
-      legend.title = element_blank(),
-      axis.title.x = element_blank()
+  p <- ggplot2::ggplot(alledgdat, ggplot2::aes(x = Date, y = z_cmed)) + 
+    ggplot2::geom_rug(sides = 'b', size = 1) + 
+    ggplot2::geom_line() +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = lo, ymax = hi)) + 
+    ggplot2::geom_point(size = 4) +
+    ggplot2::theme_minimal(base_size = 18, base_family = fml) + 
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 4))) +
+    ggplot2::theme(
+      legend.title = ggplot2::element_blank(),
+      axis.title.x = ggplot2::element_blank()
     ) +
-    labs(
+    ggplot2::labs(
      y = 'Seagrass edge estimate (cm)'
     )
   
@@ -419,10 +431,10 @@ rcttrantab <- reactive({
   # input
   trantab <- trantab()
   
-  out <- reactable(trantab,
-    defaultColDef = colDef(
+  out <- reactable::reactable(trantab,
+    defaultColDef = reactable::colDef(
       footerStyle = list(fontWeight = "bold"),
-      format = colFormat(digits = 0, separators = F),
+      format = reactable::colFormat(digits = 0, separators = F),
       resizable = TRUE
     ),
     filterable = T,
@@ -448,10 +460,10 @@ rcttranocctab <- reactive({
   # input
   tranocctab <- tranocctab()
   
-  out <- reactable(transectocc,
-    defaultColDef = colDef(
+  out <- reactable::reactable(transectocc,
+    defaultColDef = reactable::colDef(
       footerStyle = list(fontWeight = "bold"),
-      format = colFormat(digits = 0, separators = F),
+      format = reactable::colFormat(digits = 0, separators = F),
       resizable = TRUE
     ),
     filterable = T,
@@ -466,8 +478,8 @@ rcttranocctab <- reactive({
 trnptstab <- reactive({
   
   out <- trnpts %>% 
-    st_set_geometry(NULL) %>% 
-    select(Transect = TRAN_ID, lat_dd = LAT_DD, lon_dd = LONG_DD, mon_agency = MonAgency, bay_segment)
+    sf::st_set_geometry(NULL) %>% 
+    dplyr::select(Transect = TRAN_ID, lat_dd = LAT_DD, lon_dd = LONG_DD, mon_agency = MonAgency, bay_segment)
   
   return(out)
   
@@ -479,10 +491,10 @@ rcttrnptstab <- reactive({
   # input
   trnptstab <- trnptstab()
   
-  out <- reactable(trnptstab,
-    defaultColDef = colDef(
+  out <- reactable::reactable(trnptstab,
+    defaultColDef = reactable::colDef(
       footerStyle = list(fontWeight = "bold"),
-      format = colFormat(digits = 0, separators = F),
+      format = reactable::colFormat(digits = 0, separators = F),
       resizable = TRUE
     ),
     filterable = T,
@@ -604,8 +616,8 @@ Column {.tabset .tabset-fade data-width=200}
 ```{r}
 cols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
 
-mapview(trnpts, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F, col.regions = cols) + 
-  mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4, color = cols)
+mapview::mapview(trnpts, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F, col.regions = cols) + 
+  mapview::mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4, color = cols)
 ```
 
 ### USING THIS TAB
@@ -628,7 +640,7 @@ The seagrass species include the five dominant species found in Tampa Bay:
 * *Halophila engalmanii*: star grass
 * *Ruppia maritima*: widgeon grass
 
-The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
+The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all seagrass species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
 
 The __changes over time__ plot on the right shows similar information as the report card, except the frequency occurrence estimates are shown separately for each species.  Additionally, the estimates are grouped across the segment selection.  Removing a segment at the top will update the plot to show only frequency occurrence estimates for the selected segments.  Likewise, adding or removing species from the selection at the top will add or remove a species from the plot.  
 
@@ -678,13 +690,13 @@ Column {data-width=500}
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    selectInput(inputId = 'segsel1', label = 'Select segments:', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
-    selectInput(inputId = 'sppsel1', label = 'Select species:', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
+    selectInput(inputId = 'segsel1', label = 'Select segments (backspace to remove):', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
+    selectInput(inputId = 'sppsel1', label = 'Select species (backspace to remove):', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2022, value = c(1998, 2022), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
-    renderPlotly(matplo()),
-    renderPlotly(aveplo())
+    plotly::renderPlotly(matplo()),
+    plotly::renderPlotly(aveplo())
   )
 )
 ```
@@ -698,7 +710,8 @@ Column {.tabset .tabset-fade data-width=200}
 ### MAP SELECTION
 
 ```{r}
-renderLeaflet(mapplo())
+output$mapplo <- leaflet::renderLeaflet(m)
+leaflet::leafletOutput('mapplo')
 ```
 
 ### USING THIS TAB
@@ -776,13 +789,13 @@ Column {data-width=500}
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    selectInput(inputId = 'trnsel1', label = 'Select transect:', choices = trns, selected = trns[1], width = '90%'),
-    selectInput(inputId = 'sppsel2', label = 'Select species:', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
+    HTML('<b>Select a transect by clicking a marker on the map</b>'),
+    selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2022, value = c(1998, 2022), step = 1, sep = '', width = '90%')
   ),
   fillCol(flex = c(1, 1),
-    renderPlotly(trnplo()),
-    renderPlotly(sumplo())
+    plotly::renderPlotly(trnplo()),
+    plotly::renderPlotly(sumplo())
   )
 )
 ```
@@ -874,8 +887,8 @@ Column {.tabset .tabset-fade data-width=650}
 
 ```{r}
 fillCol(flex = c(NA, 1),
-  downloadBttn('dltrantab', 'Download data', style = 'simple', block = T, color = 'success'),
-  renderReactable(rcttrantab())
+  shinyWidgets::downloadBttn('dltrantab', 'Download data', style = 'simple', block = T, color = 'success'),
+  reactable::renderReactable(rcttrantab())
   )
 ```
 
@@ -883,8 +896,8 @@ fillCol(flex = c(NA, 1),
 
 ```{r}
 fillCol(flex = c(NA, 1),
-  downloadBttn('dltranocctab', 'Download data', style = 'simple', block = T, color = 'success'),
-  renderReactable(rcttranocctab())
+  shinyWidgets::downloadBttn('dltranocctab', 'Download data', style = 'simple', block = T, color = 'success'),
+  reactable::renderReactable(rcttranocctab())
   )
 ```
 
@@ -892,8 +905,8 @@ fillCol(flex = c(NA, 1),
 
 ```{r}
 fillCol(flex = c(NA, 1),
-  downloadBttn('dltrnptstab', 'Download data', style = 'simple', block = T, color = 'success'),
-  renderReactable(rcttrnptstab())
+  shinyWidgets::downloadBttn('dltrnptstab', 'Download data', style = 'simple', block = T, color = 'success'),
+  reactable::renderReactable(rcttrnptstab())
   )
 ```
 
