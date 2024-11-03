@@ -225,7 +225,7 @@ demplo <- reactive({
   
   # input
   demdat <- demdat() 
-  
+
   p <- ggplot2::ggplot(demdat, ggplot2::aes(y = Depth_dem, x = Site, group = Date)) + 
     ggplot2::geom_line() + 
     ggplot2::geom_point(ggplot2::aes(colour = patxt, size = meanabu)) + 
@@ -252,7 +252,7 @@ dtdemplo <- reactive({
   # input
   demdat <- demdat() 
   dtssel1 <- input$dtssel1
-  
+
   req(dtssel1)
 
   # subset date data from demdat
@@ -297,7 +297,7 @@ dtdemplo <- reactive({
   ttl <- 'Estimate not possible'
   
   # add site, edge estimates if available
-  if(!is.na(res)){
+  if(inherits(res, 'data.frame')){
     
     # logistic mod prediction for site
     preds <- attr(allests, 'preds')
@@ -345,7 +345,7 @@ dtdemplo <- reactive({
     ggplot2::ggtitle(ttl)
   
   p <- p1 + p2 + patchwork::plot_layout(ncol = 2)
-  
+
   return(p)
   
 })
