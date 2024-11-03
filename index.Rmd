@@ -323,8 +323,8 @@ dtdemplo <- reactive({
     
     # res transposed for p2
     res2 <- res %>% 
-      gather('est', 'val', -var) %>% 
-      spread(var, val)
+      tidyr::gather('est', 'val', -var) %>% 
+      tidyr::spread(var, val)
 
     # add site and depth estimates
     p2 <- p2 +
