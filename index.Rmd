@@ -87,8 +87,8 @@ m <- mapview::mapview(trnpts, homebutton = F, legend = F) %>%
 
 # globals
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
-spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa", "Dapis")
-sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF', '#8B2323')
+spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa", "Dapis", "Chaetomorpha")
+sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF', '#8B2323', '#6AF427')
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 ```
@@ -660,7 +660,7 @@ knitr::include_graphics('www/segmentsel2.PNG')
 ```
 <br>
 
-Similarly, species can be added or removed from the right plot by changing the selection. Below, Halodule is selected and ready to be removed by hitting the backspace key on your keyboard. Caulerpa (attached macroalgae) and Dapis (cyanobacteria) can also be selected, although estimates are unreliable prior to 2021.
+Similarly, species can be added or removed from the right plot by changing the selection. Below, Halodule is selected and ready to be removed by hitting the backspace key on your keyboard. Caulerpa (attached macroalgae), Dapis (cyanobacteria), and Chaetomorpha (drift green algae) can also be selected, although estimates are unreliable prior to 2021.
 
 <br>
 ```{r, fig.align = 'center', out.width = '70%'}
@@ -751,7 +751,7 @@ knitr::include_graphics('www/transectsel.PNG')
 ```
 <br>
 
-Species can be added or removed from both plots by changing the selection in the top middle selector. Below, Halodule is selected and ready to be removed by hitting the backspace key. Caulerpa (attached macroalgae) and Dapis (cyanobacteria) can also be selected, although estimates are unreliable prior to 2021.
+Species can be added or removed from both plots by changing the selection in the top middle selector. Below, Halodule is selected and ready to be removed by hitting the backspace key. Caulerpa (attached macroalgae), Dapis (cyanobacteria), and Chaetomorpha (drift green algae) can also be selected, although estimates are unreliable prior to 2021.
 
 <br>
 ```{r, fig.align = 'center', out.width = '70%'}
@@ -918,7 +918,7 @@ __Complete transect data__: Minimally altered raw transect data for every transe
 * *Transect*: Transect name
 * *Site*: Quadrat location along each transect, meters
 * *Depth*: Site depth, meters. Should be negative values below the water surface.
-* *Savspecies*: Relevant seagrass genus, also includes AA (attached algae, multiple types including Caulerpa), DA (drift algae), cyanobacteria (Dapis), and no cover. Estimates for Caulerpa and Dapis are unreliable prior to 2021.
+* *Savspecies*: Relevant seagrass genus, also includes AA (attached algae, multiple types including Caulerpa), DA (drift algae), cyanobacteria (Dapis), Chaetomorpha (drift green algae), and no cover. Estimates for Caulerpa, Dapis, and Chaetomorpha are unreliable prior to 2021.
 * *SeagrassEdge*: Depth of seagrass edge, cm
 * *var*: Measured variable, one of abundance, blade length, or short shoot density
 * *aveval*: Average value for the measured variable (multiple quadrats at a site depending on variable), unitless if abundance, cm if blade length, shoots per square meter if short shoot density
