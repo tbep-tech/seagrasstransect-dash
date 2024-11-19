@@ -42,26 +42,21 @@ trnpts <- trnpts %>%
 trnlns <- trnlns %>% 
   dplyr::filter(Site %in% unique(transect$Transect)) %>% 
   dplyr::filter(Site %in% trnpts$TRAN_ID) %>% 
-  dplyr::filter(!duplicated(Site))
+  dplyr::filter(!duplicated(Site)) %>% 
+  sf::st_zm(NULL)
 
 # initial transect selection 
 trninit <- 'S1T17'
 
 # base map
-m <- mapview::mapview(trnpts, homebutton = F, legend = F) %>% 
-  .@map %>% 
-  leaflet::clearMarkers() %>% 
-  leaflet::addCircleMarkers(
-    data = trnpts,
-    layerId = ~TRAN_ID,
-    stroke = TRUE,
+m <- tbeptools::util_map(trnpts, minimap = NULL) %>% 
+  leaflet::addPolylines(
+    data = trnlns,
+    layerId = ~Site,
     color = 'black',
-    fill = TRUE,
-    fillColor = 'grey',
-    weight = 1,
-    fillOpacity = 1,
-    radius= 4,
-    label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+    weight = 8,
+    opacity = 0.5,
+    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
   ) %>% 
   leaflet::addLabelOnlyMarkers(data = trnpts, ~0.99995 * LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = leaflet::labelOptions(
     noHide = T, 
@@ -72,17 +67,13 @@ m <- mapview::mapview(trnpts, homebutton = F, legend = F) %>%
       'color' = 'darkgreen'
     )
   )) %>% 
-  leaflet::addCircleMarkers(
-    data = trnpts[trnpts$TRAN_ID %in% trninit, ],
+  leaflet::addPolylines(
+    data = trnlns[trnlns$Site == trninit, ],
     layerId = 'seltrn',
-    stroke = TRUE,
-    color = 'black',
-    fill = TRUE,
-    fillColor = 'red',
-    weight = 1,
-    fillOpacity = 1,
-    radius= 6,
-    label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
+    color = 'red',
+    weight = 8,
+    opacity = 1,
+    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
   ) 
 
 # globals
@@ -138,28 +129,24 @@ aveplo <- reactive({
 
 # map selection
 mapplo <- leaflet::leafletProxy('mapplo')
-observeEvent(input$mapplo_marker_click, {
-  
-  # input
-  trnsel1 <- input$mapplo_marker_click$id
+observeEvent(input$mapplo_shape_click, {
 
-  toadd <- trnpts %>% 
-    dplyr::filter(TRAN_ID %in% trnsel1)
+  # input
+  trnsel1 <- input$mapplo_shape_click$id
+
+  toadd <- trnlns %>% 
+    dplyr::filter(Site %in% trnsel1)
 
   mapplo <- mapplo %>%
     leaflet::removeMarker('seltrn') %>% 
-    leaflet::addCircleMarkers(
+    leaflet::addPolylines(
       data = toadd,
       layerId = 'seltrn',
-      stroke = TRUE,
-      color = 'black',
-      fill = TRUE,
-      fillColor = 'red',
-      weight = 1,
-      fillOpacity = 1,
-      radius= 6,
-      label = ~paste0('Transect ', TRAN_ID, ' (Agency responsible: ', MonAgency, ')')
-    ) 
+      color = 'red',
+      weight = 4,
+      opacity = 1,
+      label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
+    )
   
 })
 
@@ -167,7 +154,7 @@ observeEvent(input$mapplo_marker_click, {
 trnplo <- reactive({
   
   # input
-  trnsel1 <- input$mapplo_marker_click$id
+  trnsel1 <- input$mapplo_shape_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
@@ -189,7 +176,7 @@ trnplo <- reactive({
 sumplo <- reactive({
   
   # input
-  trnsel1 <- input$mapplo_marker_click$id
+  trnsel1 <- input$mapplo_shape_click$id
   sppsel2 <- input$sppsel2
   yrssel2 <- input$yrssel2
   
@@ -616,8 +603,7 @@ Column {.tabset .tabset-fade data-width=200}
 ```{r}
 cols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
 
-mapview::mapview(trnpts, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F, col.regions = cols) + 
-  mapview::mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4, color = cols)
+mapview::mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 8, color = cols)
 ```
 
 ### USING THIS TAB
