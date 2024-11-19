@@ -602,8 +602,22 @@ Column {.tabset .tabset-fade data-width=200}
 
 ```{r}
 cols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
+names(cols) <- sort(unique(trnlns$MonAgency))
 
-mapview::mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 8, color = cols)
+tbeptools::util_map(trnpts, minimap = NULL) %>% 
+  leaflet::addPolylines(
+    data = trnlns,
+    color = as.character(cols[as.character(trnlns$MonAgency)]),
+    weight = 8,
+    opacity = 0.9,
+    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
+  ) %>% 
+  leaflet::addLegend(
+    colors = cols,
+    opacity = 0.9,
+    labels = names(cols),
+    title = "Monitoring Agency"
+  )
 ```
 
 ### USING THIS TAB
@@ -775,7 +789,7 @@ Column {data-width=500}
 ```{r}
 fillCol(flex = c(0.1, 1),
   fillRow(
-    HTML('<b>Select a transect by clicking a marker on the map</b>'),
+    HTML('<b>Select a transect by clicking one on the map</b>'),
     selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%')
   ),
