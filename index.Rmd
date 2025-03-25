@@ -154,7 +154,7 @@ aveplo <- reactive({
   yrssel1 <- input$yrssel1
   
   req(!identical('all', segsel1) & !is.null(segsel1))
-  req(!is.null(sppsel1))
+  req(!identical('total', sppsel1) & !is.null(sppsel1))
   req(yrssel1[1] < yrssel1[2])
   
   tots <- ifelse('total' %in% sppsel1, T, F)
@@ -667,7 +667,7 @@ The seagrass species include the five dominant species found in Tampa Bay:
 * *Halophila engalmanii*: star grass
 * *Ruppia maritima*: widgeon grass
 
-The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all seagrass species in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and white means lower frequency occurrences (less healthy seagrass).  
+The __report card__ provides an assessment of relative health of seagrasses in each of the major bay segments, including a baywide assessment in the Tampa Bay column.  The color categories (white to dark blue) are based on average frequency occurrence estimates across all seagrass species (Halodule, Syringodium, Thalassia, Ruppia, Halophila) in each segment.  Darker blue means higher frequency occurrences (healthy seagrass) and whiter means lower frequency occurrences (less healthy seagrass).  The values are not affected by the species selection menu, whereas the values in the "all" column are affected by the bay segment selections.
 
 The __changes over time__ plot on the right shows similar information as the report card, except the frequency occurrence estimates are shown separately for each species.  Additionally, the estimates are grouped across the segment selection.  Removing a segment at the top will update the plot to show only frequency occurrence estimates for the selected segments.  Likewise, adding or removing species from the selection at the top will add or remove a species from the plot.  
 
@@ -687,7 +687,7 @@ knitr::include_graphics('www/segmentsel2.PNG')
 ```
 <br>
 
-Similarly, species can be added or removed from the right plot by changing the selection. Below, Halodule is selected and ready to be removed by hitting the backspace key on your keyboard. Caulerpa (attached macroalgae), Dapis (cyanobacteria), and Chaetomorpha (drift green algae) can also be selected, although estimates are unreliable prior to 2021.
+Similarly, species can be added or removed from the right plot by changing the selection. Below, Halodule is selected and ready to be removed by hitting the backspace key on your keyboard. Caulerpa (attached macroalgae), Dapis (cyanobacteria), and Chaetomorpha (drift green algae) can also be selected, although estimates are unreliable prior to 2021. The value for total only refers to the total frequency occurrence across seagrass species (Halodule, Syringodium, Thalassia, Ruppia, Halophila). The total values are not affected by removing any seagrass species from the selection, whereas the total values will be updated with changes in the bay segment selection.
 
 <br>
 ```{r, fig.align = 'center', out.width = '70%'}
@@ -719,7 +719,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     selectInput(inputId = 'segsel1', label = 'Select segments (backspace to remove):', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
     selectInput(inputId = 'sppsel1', label = 'Select species (backspace to remove):', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%', ticks = F)
   ),
   fillRow(flex = c(0.5, 1),
     plotly::renderPlotly(matplo()),
@@ -818,7 +818,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     HTML('<b>Select a transect by clicking one on the map</b>'),
     selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%', ticks = F)
   ),
   fillCol(flex = c(1, 1),
     plotly::renderPlotly(trnplo()),
