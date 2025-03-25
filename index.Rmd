@@ -134,7 +134,7 @@ matplo <- reactive({
   segsel1 <- input$segsel1
   yrssel1 <- input$yrssel1
 
-  req(!is.null(segsel1))
+  req(!identical('all', segsel1) & !is.null(segsel1))
   req(yrssel1[1] < yrssel1[2])
   
   tots <- ifelse('all' %in% segsel1, T, F)
@@ -153,7 +153,7 @@ aveplo <- reactive({
   sppsel1 <- input$sppsel1
   yrssel1 <- input$yrssel1
   
-  req(!is.null(segsel1))
+  req(!identical('all', segsel1) & !is.null(segsel1))
   req(!is.null(sppsel1))
   req(yrssel1[1] < yrssel1[2])
   
