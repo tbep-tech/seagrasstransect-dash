@@ -48,8 +48,34 @@ trnlns <- trnlns %>%
 # initial transect selection 
 trninit <- 'S1T17'
 
-# base map
-m <- tbeptools::util_map(trnpts, minimap = NULL) %>% 
+# globals
+segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
+spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa", "Dapis", "Chaetomorpha")
+sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF', '#8B2323', '#6AF427')
+trncols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
+names(trncols) <- sort(unique(trnlns$MonAgency))
+demtrns <- sort(unique(transectdem$Transect))
+rctsz <- 15
+
+# transect matrix selection base map
+m1 <- tbeptools::util_map(trnpts, minimap = NULL) %>% 
+  leaflet::addPolylines(
+    data = trnlns,
+    group = 'transects',
+    color = as.character(trncols[as.character(trnlns$MonAgency)]),
+    weight = 8,
+    opacity = 0.9,
+    label = ~paste0('Transect ', Site, ' (agency responsible: ', MonAgency, ', bay segment: ', bay_segment, ')')
+  ) %>% 
+  leaflet::addLegend(
+    colors = trncols,
+    opacity = 0.9,
+    labels = names(trncols),
+    title = "Monitoring Agency"
+  )
+
+# transect selection base map
+m2 <- tbeptools::util_map(trnpts, minimap = NULL) %>% 
   leaflet::addPolylines(
     data = trnlns,
     layerId = ~Site,
@@ -75,16 +101,32 @@ m <- tbeptools::util_map(trnpts, minimap = NULL) %>%
     opacity = 1,
     label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
   ) 
-
-# globals
-segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
-spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa", "Dapis", "Chaetomorpha")
-sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF', '#8B2323', '#6AF427')
-demtrns <- sort(unique(transectdem$Transect))
-rctsz <- 15
 ```
 
 ```{r reactives}
+# map matrix selection
+mapmat <- leaflet::leafletProxy('mapmat')
+observeEvent(input$segsel1, {
+
+  # input
+  segsel1 <- input$segsel1
+
+  toadd <- trnlns %>% 
+    dplyr::filter(bay_segment %in% segsel1)
+
+  mapmat %>%
+    leaflet::clearGroup('transects') %>% 
+    leaflet::addPolylines(
+      data = toadd,
+      group = 'transects',
+      color = as.character(trncols[as.character(toadd$MonAgency)]),
+      weight = 8,
+      opacity = 0.9,
+      label = ~paste0('Transect ', Site, ' (agency responsible: ', MonAgency, ', bay segment: ', bay_segment, ')'),
+    )
+
+}, ignoreNULL = FALSE)
+
 # matrix plot
 matplo <- reactive({
   
@@ -601,23 +643,8 @@ Column {.tabset .tabset-fade data-width=200}
 ### TRANSECT LOCATIONS
 
 ```{r}
-cols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
-names(cols) <- sort(unique(trnlns$MonAgency))
-
-tbeptools::util_map(trnpts, minimap = NULL) %>% 
-  leaflet::addPolylines(
-    data = trnlns,
-    color = as.character(cols[as.character(trnlns$MonAgency)]),
-    weight = 8,
-    opacity = 0.9,
-    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
-  ) %>% 
-  leaflet::addLegend(
-    colors = cols,
-    opacity = 0.9,
-    labels = names(cols),
-    title = "Monitoring Agency"
-  )
+output$mapmat <- leaflet::renderLeaflet(m1)
+leaflet::leafletOutput('mapmat')
 ```
 
 ### USING THIS TAB
@@ -710,7 +737,7 @@ Column {.tabset .tabset-fade data-width=200}
 ### MAP SELECTION
 
 ```{r}
-output$mapplo <- leaflet::renderLeaflet(m)
+output$mapplo <- leaflet::renderLeaflet(m2)
 leaflet::leafletOutput('mapplo')
 ```
 
