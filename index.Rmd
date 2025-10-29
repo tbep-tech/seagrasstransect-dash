@@ -82,7 +82,7 @@ m2 <- tbeptools::util_map(trnpts, minimap = NULL) %>%
     color = 'black',
     weight = 8,
     opacity = 0.5,
-    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
+    label = ~paste0('Transect ', Site, ' (agency responsible: ', MonAgency, ', bay segment: ', bay_segment, ')')
   ) %>% 
   leaflet::addLabelOnlyMarkers(data = trnpts, ~0.99995 * LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = leaflet::labelOptions(
     noHide = T, 
@@ -99,7 +99,7 @@ m2 <- tbeptools::util_map(trnpts, minimap = NULL) %>%
     color = 'red',
     weight = 8,
     opacity = 1,
-    label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
+    label = ~paste0('Transect ', Site, ' (agency responsible: ', MonAgency, ', bay segment: ', bay_segment, ')')
   ) 
 ```
 
