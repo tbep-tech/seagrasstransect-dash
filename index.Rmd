@@ -692,7 +692,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     selectInput(inputId = 'segsel1', label = 'Select segments (backspace to remove):', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
     selectInput(inputId = 'sppsel1', label = 'Select species (backspace to remove):', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = 2025, value = c(1998, 2025), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
     plotly::renderPlotly(matplo()),
@@ -791,7 +791,7 @@ fillCol(flex = c(0.1, 1),
   fillRow(
     HTML('<b>Select a transect by clicking a marker on the map</b>'),
     selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
-    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2024, value = c(1998, 2024), step = 1, sep = '', width = '90%')
+    sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = 2025, value = c(1998, 2025), step = 1, sep = '', width = '90%')
   ),
   fillCol(flex = c(1, 1),
     plotly::renderPlotly(trnplo()),
