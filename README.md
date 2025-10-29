@@ -12,7 +12,7 @@ This repository is distinct from [seagrasstransect](https://github.com/tbep-tech
 Each year, transect survey data are updated for various TBEP reporting products.  This typically occurs late October or early November.  The following steps are taken to update these products. 
 
 1.  Update transect dashboard.
-    - Run `R/dat_proc.R` to update the files `transect`, `transectocc`, and `transectdem`
+    - Run `R/dat_proc.R` to update the files `data/transect.RData`, `data/transectocc.RData`, and `data/transectdem.RData`
 1.  Update files on <https://github.com/tbep-tech/seagrasstransect>
     - Run `wateratlas_source.R`.  This will update the files `data/trndat.RData`, `docs/reportcard.jpg`, `docs/freqocc.jpg`, `docs/freqocctab.html`, `docs/trantab.csv`, `docs/tranocctab.csv`, `docs/metadata.html` and render the README file to show the update date. 
     - Graphics created here appear on <https://tbep.org/seagrass-assessment/> and <https://tampabay.wateratlas.usf.edu/seagrass-monitoring/>
