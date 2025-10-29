@@ -187,7 +187,7 @@ observeEvent(input$mapplo_shape_click, {
       color = 'red',
       weight = 4,
       opacity = 1,
-      label = ~paste0('Transect ', Site, ' (Agency responsible: ', MonAgency, ')')
+      label = ~paste0('Transect ', Site, ' (agency responsible: ', MonAgency, ', bay segment: ', bay_segment, ')')
     )
   
 })
