@@ -36,7 +36,7 @@ The dashboard is a flexdashboard document (`index.Rmd`) that uses `runtime: shin
 
 The steps below follow step 1 of the annual updates above.
 
-1.  Pull the updated repository to the TBEP server. No other files need to be deleted or rendered by hand. rmarkdown re-renders `index.html` on the next request if `index.Rmd`, the files in `data/`, `R/funcs.R`, `styles.css`, the header files, or the images in `www/` are newer than `index.html`. Pulling new data files gives them a newer modified time, so this happens automatically.
+1.  Pull the updated repository to the TBEP server. No other files need to be deleted or rendered by hand. rmarkdown re-renders `index.html` on the next request if `index.Rmd`, the files in `data/`, `R/funcs.R`, the header files, or the files in `www/` (including `styles.css`) are newer than `index.html`. Pulling new data files gives them a newer modified time, so this happens automatically.
 1.  Make sure running R processes pick up the new data. A process that was already running keeps the old data until Shiny Server shuts it down, which happens shortly after its last visitor leaves. To restart the app right away, create or update a `restart.txt` file in the app directory on the server (e.g., `touch restart.txt`).
 1.  Check the live dashboard.
     - The year range sliders on the SUMMARIES and INDIVIDUAL TRANSECTS pages should end at the new year.

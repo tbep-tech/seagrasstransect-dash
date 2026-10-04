@@ -8,7 +8,7 @@ output:
      includes:
         in_header: [google-analytics.html, loading_in_header.html]
 runtime: shiny_prerendered
-css: styles.css
+css: www/styles.css
 ---
 
 ```{r setup, include=F, context='setup'}
@@ -24,7 +24,7 @@ source('R/funcs.R')
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
-# writeLines(styles, 'styles.css')
+# writeLines(styles, 'www/styles.css')
 
 data('trnpts', package = 'tbeptools')
 data('trnlns', package = 'tbeptools')
