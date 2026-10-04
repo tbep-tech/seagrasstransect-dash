@@ -6,13 +6,15 @@ output:
      social: menu
      source_code: "https://github.com/tbep-tech/seagrasstransect-dash"
      includes:
-        in_header: google-analytics.html
-runtime: shiny
+        in_header: [google-analytics.html, loading_in_header.html]
+runtime: shiny_prerendered
 css: styles.css
 ---
 
-```{r setup, include=F}
+```{r setup, include=F, context='setup'}
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
+
+library(shiny)
 
 box::use(
   dplyr[`%>%`]
@@ -60,6 +62,28 @@ names(trncols) <- sort(unique(trnlns$MonAgency))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
 
+# data table with column filters, server-side paging
+dtfun <- function(dat){
+
+  dat <- data.frame(dat)
+
+  # numeric columns that are not whole numbers
+  dbls <- names(dat)[sapply(dat, function(x) is.double(x) && !inherits(x, 'Date') && any(x %% 1 != 0, na.rm = T))]
+
+  out <- DT::datatable(dat,
+    rownames = F,
+    filter = 'top',
+    selection = 'none',
+    options = list(pageLength = rctsz, scrollX = T)
+    )
+
+  if(length(dbls) > 0)
+    out <- DT::formatRound(out, columns = dbls, digits = 2)
+
+  return(out)
+
+}
+
 # transect matrix selection base map
 m1 <- tbeptools::util_map(trnpts, minimap = NULL) %>% 
   leaflet::addPolylines(
@@ -106,7 +130,7 @@ m2 <- tbeptools::util_map(trnpts, minimap = NULL) %>%
   ) 
 ```
 
-```{r reactives}
+```{r reactives, context='server'}
 # map matrix selection
 mapmat <- leaflet::leafletProxy('mapmat')
 observeEvent(input$segsel1, {
@@ -457,53 +481,14 @@ trantab <- reactive({
   
 })
 
-# transect table
-rcttrantab <- reactive({
-  
-  # input
-  trantab <- trantab()
-  
-  out <- reactable::reactable(trantab,
-    defaultColDef = reactable::colDef(
-      footerStyle = list(fontWeight = "bold"),
-      format = reactable::colFormat(digits = 0, separators = F),
-      resizable = TRUE
-    ),
-    filterable = T,
-    defaultPageSize = rctsz
-    )
-  
-  return(out)
-  
-})
-
 # transect occurrence table
 tranocctab <- reactive({
-  
-  out <- transectocc
-  
-  return(out)
-  
-})
 
-# transect occurrence table
-rcttranocctab <- reactive({
-  
-  # input
-  tranocctab <- tranocctab()
-  
-  out <- reactable::reactable(transectocc,
-    defaultColDef = reactable::colDef(
-      footerStyle = list(fontWeight = "bold"),
-      format = reactable::colFormat(digits = 0, separators = F),
-      resizable = TRUE
-    ),
-    filterable = T,
-    defaultPageSize = rctsz
-    )
-  
+  out <- transectocc %>%
+    dplyr::ungroup()
+
   return(out)
-  
+
 })
 
 # transect locations table
@@ -516,29 +501,35 @@ trnptstab <- reactive({
   return(out)
   
 })
-
-# transect locations for download
-rcttrnptstab <- reactive({
-  
-  # input
-  trnptstab <- trnptstab()
-  
-  out <- reactable::reactable(trnptstab,
-    defaultColDef = reactable::colDef(
-      footerStyle = list(fontWeight = "bold"),
-      format = reactable::colFormat(digits = 0, separators = F),
-      resizable = TRUE
-    ),
-    filterable = T,
-    defaultPageSize = rctsz
-    )
-  
-  return(out)
-  
-})
 ```
 
-```{r downloadhandlers}
+```{r outputs, context='server'}
+output$mapmat <- leaflet::renderLeaflet(m1)
+output$matplo <- plotly::renderPlotly(matplo())
+output$aveplo <- plotly::renderPlotly(aveplo())
+output$mapplo <- leaflet::renderLeaflet(m2)
+output$trnplo <- plotly::renderPlotly(trnplo())
+output$sumplo <- plotly::renderPlotly(sumplo())
+output$demplo <- renderPlot(demplo())
+output$dtsel <- renderUI({
+
+  demdat <- demdat()
+
+  req(demdat)
+
+  dts <- sort(unique(demdat$Date))
+
+  selectInput(inputId = 'dtssel1', 'Select date:', choices = dts)
+
+})
+output$dtdemplo <- renderPlot(dtdemplo())
+output$alledgplo <- renderPlot(alledgplo())
+output$trantab <- DT::renderDT(dtfun(trantab()))
+output$tranocctab <- DT::renderDT(dtfun(tranocctab()))
+output$trnptstab <- DT::renderDT(dtfun(trnptstab()))
+```
+
+```{r downloadhandlers, context='server'}
 # download transect table
 output$dltrantab <- downloadHandler(
   filename = function(){'transect.csv'},
@@ -616,7 +607,7 @@ knitr::include_graphics('www/plotcontrols.PNG')
 
 #### Website information
 
-<a href="https://tbep-tech.github.io/tbeptools/" target="__blank" rel="noopener noreferrer"><img class="wp-image-14010 alignnone " src="tbeptoolshex.png" alt="" width="200" height="200" /></a>
+<a href="https://tbep-tech.github.io/tbeptools/" target="__blank" rel="noopener noreferrer"><img class="wp-image-14010 alignnone " src="www/tbeptoolshex.png" alt="" width="200" height="200" /></a>
 
 The page source content can be viewed on [Github](https://github.com/tbep-tech/seagrasstransect-dash). Nearly all of the data, tables, and plots were created using functions in the [tbeptools](https://tbep-tech.github.io/tbeptools) R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/seagrasstransect.html) for a detailed overview of how you can use these functions on your own to work with the data. 
 
@@ -646,7 +637,6 @@ Column {.tabset .tabset-fade data-width=200}
 ### TRANSECT LOCATIONS
 
 ```{r}
-output$mapmat <- leaflet::renderLeaflet(m1)
 leaflet::leafletOutput('mapmat')
 ```
 
@@ -725,8 +715,8 @@ fillCol(flex = c(0.1, 1),
     sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = maxyr, value = c(1998, maxyr), step = 1, sep = '', width = '90%')
   ),
   fillRow(flex = c(0.5, 1),
-    plotly::renderPlotly(matplo()),
-    plotly::renderPlotly(aveplo())
+    plotly::plotlyOutput('matplo', height = '100%'),
+    plotly::plotlyOutput('aveplo', height = '100%')
   )
 )
 ```
@@ -740,7 +730,6 @@ Column {.tabset .tabset-fade data-width=200}
 ### MAP SELECTION
 
 ```{r}
-output$mapplo <- leaflet::renderLeaflet(m2)
 leaflet::leafletOutput('mapplo')
 ```
 
@@ -824,8 +813,8 @@ fillCol(flex = c(0.1, 1),
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = maxyr, value = c(1998, maxyr), step = 1, sep = '', width = '90%')
   ),
   fillCol(flex = c(1, 1),
-    plotly::renderPlotly(trnplo()),
-    plotly::renderPlotly(sumplo())
+    plotly::plotlyOutput('trnplo', height = '100%'),
+    plotly::plotlyOutput('sumplo', height = '100%')
   )
 )
 ```
@@ -879,32 +868,22 @@ column(12,
 ### DEPTH BY DISTANCE
 
 ```{r}
-renderPlot(demplo())
+plotOutput('demplo', height = '100%')
 ```
 
 ### DATE RESULTS
 
 ```{r}
 fillCol(flex = c(NA, 1),
-  renderUI({
-    
-    demdat <- demdat()
-    
-    req(demdat)
-    
-    dts <- sort(unique(demdat$Date))
-    
-    selectInput(inputId = 'dtssel1', 'Select date:', choices = dts)
-    
-  }), 
-  renderPlot(dtdemplo())
+  uiOutput('dtsel'),
+  plotOutput('dtdemplo', height = '100%')
 )
 ```
 
 ### EDGE TRENDS BY SITE
 
 ```{r}
-renderPlot(alledgplo())
+plotOutput('alledgplo', height = '100%')
 ```
 
 4 DATA DOWNLOADS {data-navmenu="PAGE SELECTION"}
@@ -918,7 +897,7 @@ Column {.tabset .tabset-fade data-width=650}
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltrantab', 'Download data', style = 'simple', block = T, color = 'success'),
-  reactable::renderReactable(rcttrantab())
+  DT::DTOutput('trantab')
   )
 ```
 
@@ -927,7 +906,7 @@ fillCol(flex = c(NA, 1),
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltranocctab', 'Download data', style = 'simple', block = T, color = 'success'),
-  reactable::renderReactable(rcttranocctab())
+  DT::DTOutput('tranocctab')
   )
 ```
 
@@ -936,7 +915,7 @@ fillCol(flex = c(NA, 1),
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltrnptstab', 'Download data', style = 'simple', block = T, color = 'success'),
-  reactable::renderReactable(rcttrnptstab())
+  DT::DTOutput('trnptstab')
   )
 ```
 
