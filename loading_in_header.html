@@ -39,7 +39,8 @@
   // shows the icon and every idle event hides it, the short delay before
   // showing avoids a flash when the revealed outputs are already rendered
   // jquery may load after this script, so wait for the document to be parsed
-  document.addEventListener("DOMContentLoaded", function() {
+  // unless it already has been, as when the page is inserted after loading
+  function loadingiconinit() {
 
     var $ = window.jQuery;
 
@@ -81,5 +82,11 @@
       icon.removeClass('active');
     });
 
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadingiconinit);
+  } else {
+    loadingiconinit();
+  }
 </script>
