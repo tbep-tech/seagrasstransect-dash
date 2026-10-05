@@ -162,7 +162,6 @@ matplo <- reactive({
   yrssel1 <- input$yrssel1
 
   req(!identical('all', segsel1) & !is.null(segsel1))
-  req(yrssel1[1] < yrssel1[2])
   
   tots <- ifelse('all' %in% segsel1, T, F)
   
@@ -182,7 +181,6 @@ aveplo <- reactive({
   
   req(!identical('all', segsel1) & !is.null(segsel1))
   req(!identical('total', sppsel1) & !is.null(sppsel1))
-  req(yrssel1[1] < yrssel1[2])
   
   tots <- ifelse('total' %in% sppsel1, T, F)
   sppsel1 <- sppsel1[!sppsel1 %in% 'total']
@@ -229,6 +227,12 @@ trnplo <- reactive({
   
   if(is.null(trnsel1))
     trnsel1 <- trninit
+
+  # transect may not have samples in the selected years
+  trnyrs <- lubridate::year(transect$Date[transect$Transect == trnsel1])
+  validate(
+    need(any(trnyrs >= yrssel2[1] & trnyrs <= yrssel2[2]), 'No data for this transect in the selected years')
+  )
     
   p <- tbeptools::show_transect(transect, site = trnsel1, species = sppsel2, varplo = 'Abundance', plotly = T, base_size = 11, yrrng = yrssel2, sppcol = sppcol) %>% 
     plotly::layout(
@@ -251,6 +255,10 @@ sumplo <- reactive({
   
   if(is.null(trnsel1))
     trnsel1 <- trninit
+
+  validate(
+    need(yrssel2[1] < yrssel2[2], 'Select more than one year to view frequency occurrence over time')
+  )
   
   p <- tbeptools::show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
     plotly::layout(
@@ -708,12 +716,12 @@ Column {data-width=500}
 ### REPORT CARD MATRIX AND FREQUENCY OCCURRENCE OVER TIME
 
 ```{r}
-fillCol(flex = c(0.1, 1),
-  fillRow(
+fillCol(flex = c(NA, 1),
+  div(style = 'height: 125px;', fillRow(
     selectInput(inputId = 'segsel1', label = 'Select segments (backspace to remove):', choices = c('all', segs), selected = c('all', segs), selectize  = T, multiple = T, width = '90%'),
     selectInput(inputId = 'sppsel1', label = 'Select species (backspace to remove):', choices = c('total', spp), selected = c('total', spp[1:5]), selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel1', label = 'Select year range:', min = 1998, max = maxyr, value = c(1998, maxyr), step = 1, sep = '', width = '90%')
-  ),
+  )),
   fillRow(flex = c(0.5, 1),
     plotly::plotlyOutput('matplo', height = '100%'),
     plotly::plotlyOutput('aveplo', height = '100%')
@@ -786,7 +794,7 @@ knitr::include_graphics('www/speciessel3.PNG')
 ```
 <br>
 
-Finally, the year range can be selected from the slider on the top right.  By default, the entire date range when seagrass transect data are available is shown.  This slider affects both plots. 
+Finally, the year range can be selected from the slider on the top right.  By default, the entire date range when seagrass transect data are available is shown.  This slider affects both plots.  The bottom plot requires at least two years to be selected.
 
 <br>
 ```{r, fig.align = 'center', out.width = '70%'}
@@ -806,12 +814,12 @@ Column {data-width=500}
 ### RESULTS BY TRANSECT
 
 ```{r}
-fillCol(flex = c(0.1, 1),
-  fillRow(
+fillCol(flex = c(NA, 1),
+  div(style = 'height: 125px;', fillRow(
     HTML('<b>Select a transect by clicking one on the map</b>'),
     selectInput(inputId = 'sppsel2', label = 'Select species (backspace to remove):', choices = spp, selected = spp[1:5], selectize = T, multiple = T, width = '90%'), 
     sliderInput(inputId = 'yrssel2', label = 'Select year range:', min = 1998, max = maxyr, value = c(1998, maxyr), step = 1, sep = '', width = '90%')
-  ),
+  )),
   fillCol(flex = c(1, 1),
     plotly::plotlyOutput('trnplo', height = '100%'),
     plotly::plotlyOutput('sumplo', height = '100%')
