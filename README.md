@@ -16,7 +16,7 @@ Each year, transect survey data are updated for various TBEP reporting products.
     - Pull updated repository to TBEP server
     - Trigger an app update by running `sudo touch restart.txt` (see update selection below for interim updates)
 1.  Update files on <https://github.com/tbep-tech/seagrasstransect>
-    - Run `wateratlas_source.R`.  This will update the files `data/trndat.RData`, `docs/reportcard.jpg`, `docs/freqocc.jpg`, `docs/freqocctab.html`, `docs/trantab.csv`, `docs/tranocctab.csv`, `docs/metadata.html` and render the README file to show the update date. 
+    - Update `maxyr` on `wateratlas_source.R` and run.  This will update the files `data/trndat.RData`, `docs/reportcard.jpg`, `docs/freqocc.jpg`, `docs/freqocctab.html`, `docs/trantab.csv`, `docs/tranocctab.csv`, `docs/metadata.html` and render the README file to show the update date. 
     - Graphics created here appear on <https://tbep.org/seagrass-assessment/> and <https://tampabay.wateratlas.usf.edu/seagrass-monitoring/>
 1.  Update tbeptools at <https://github.com/tbep-tech/tbeptools>
     - Recreate the file `data/transect.RData` by running the example code in `R/transect.R`.  Update the Roxygen to change the date of update and row count in the file.
