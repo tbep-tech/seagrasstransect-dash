@@ -74,6 +74,7 @@ dtfun <- function(dat){
     rownames = F,
     filter = 'top',
     selection = 'none',
+    fillContainer = T,
     options = list(pageLength = rctsz, scrollX = T)
     )
 
@@ -912,7 +913,7 @@ Column {.tabset .tabset-fade data-width=650}
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltrantab', 'Download data', style = 'simple', block = T, color = 'success'),
-  DT::DTOutput('trantab')
+  DT::DTOutput('trantab', height = '100%')
   )
 ```
 
@@ -921,7 +922,7 @@ fillCol(flex = c(NA, 1),
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltranocctab', 'Download data', style = 'simple', block = T, color = 'success'),
-  DT::DTOutput('tranocctab')
+  DT::DTOutput('tranocctab', height = '100%')
   )
 ```
 
@@ -930,7 +931,7 @@ fillCol(flex = c(NA, 1),
 ```{r}
 fillCol(flex = c(NA, 1),
   shinyWidgets::downloadBttn('dltrnptstab', 'Download data', style = 'simple', block = T, color = 'success'),
-  DT::DTOutput('trnptstab')
+  DT::DTOutput('trnptstab', height = '100%')
   )
 ```
 
