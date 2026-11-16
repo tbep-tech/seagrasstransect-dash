@@ -60,8 +60,9 @@ trn <- transect %>%
 
 # get transect angle
 # location of starting point in UTM
-lns <- trnlns %>% 
-  st_transform(crs = utm) %>% 
+lns <- trnlns %>%
+  st_zm() %>%
+  st_transform(crs = utm) %>%
   group_by(Site) %>% 
   nest() %>% 
   mutate(

@@ -57,7 +57,7 @@ trninit <- 'S1T17'
 segs <- c('OTB', 'HB', 'MTB', 'LTB', 'BCB')
 spp <- c("Halodule", "Syringodium", "Thalassia", "Halophila", "Ruppia", "Caulerpa", "Dapis", "Chaetomorpha")
 sppcol <- c('#ED90A4', '#CCA65A', '#7EBA68', '#6FB1E7', '#00C1B2', '#D400FF', '#8B2323', '#6AF427')
-trncols <- c("#E16A86", "#CB7F2F", "#9F9400", "#50A315", "#00AC79", "#00AAB7", "#009ADE", "#A87BE4", "#DA65C3")
+trncols <- c("#E16A86", "#CE7D3B", "#AA9000", "#6F9F00", "#00AA5A", "#00AD9A", "#00A6CA", "#5991E4", "#B675E0", "#DD64BE")
 names(trncols) <- sort(unique(trnlns$MonAgency))
 demtrns <- sort(unique(transectdem$Transect))
 rctsz <- 15
@@ -259,7 +259,14 @@ sumplo <- reactive({
   validate(
     need(yrssel2[1] < yrssel2[2], 'Select more than one year to view frequency occurrence over time')
   )
-  
+
+  # transect must have more than one year of data in the selected range
+  trnyrs <- unique(lubridate::year(transect$Date[transect$Transect == trnsel1]))
+  trnyrs <- trnyrs[trnyrs >= yrssel2[1] & trnyrs <= yrssel2[2]]
+  validate(
+    need(length(trnyrs) > 1, 'Frequency occurrence over time is not shown for transects with only one year of data')
+  )
+
   p <- tbeptools::show_transectsum(transectocc, site = trnsel1, species = sppsel2, yrrng = yrssel2, sppcol = sppcol) %>% 
     plotly::layout(
       title = list(text = NA),
