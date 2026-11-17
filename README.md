@@ -23,6 +23,8 @@ Each year, transect survey data are updated for various TBEP reporting products.
     - Change year to current in the files (one instance in each file) `R/anlz_transectave.R`, `R/anlz_transectavespp.R`, `R/show_compplot.R`, `R/show_transect.R`, `R/show_transectavespp.R`, `R/show_transectmatrix.R`, `R/show_transectsum.R`, `vignettes/seagrasstransect.Rmd`. 
     - Run `devtools::document()` to update documentation
     - Update date and version in DESCRIPTION
+1.  Update the OBIS/IPT dataset with the new data.
+    - Instructions [here](https://github.com/tbep-tech/obis-example#updating-an-existing-dataset)
 
 ## How the dashboard runs
 
